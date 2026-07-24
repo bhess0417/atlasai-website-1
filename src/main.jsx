@@ -118,7 +118,7 @@ function Sidebar({ active, setActive }) {
       </nav>
 
       <div className="sidebar-card">
-        <span>SMARTLEDGER BETA</span>
+        <span>SMARTLEDGER BETA 0.2</span>
         <strong>Financial clarity, every day.</strong>
         <p>Connected accounts are using demonstration data.</p>
       </div>
@@ -135,25 +135,23 @@ function Sidebar({ active, setActive }) {
   )
 }
 
-function Topbar({ title }) {
+function Topbar({ title, onSignOut, setActive }) {
+  const [menuOpen, setMenuOpen] = useState(false)
   return (
     <header className="topbar">
-      <div>
-        <span className="eyebrow">SMARTLEDGER AI</span>
-        <h1>{title}</h1>
-      </div>
+      <div><span className="eyebrow">SMARTLEDGER AI</span><h1>{title}</h1></div>
       <div className="top-actions">
-        <label className="search">
-          <span>{icons.search}</span>
-          <input placeholder="Search anything..." />
-          <kbd>⌘ K</kbd>
-        </label>
+        <label className="search"><span>{icons.search}</span><input placeholder="Search anything..." /><kbd>⌘ K</kbd></label>
         <button className="circle-button">{icons.bell}<i /></button>
-        <button className="account-button">
-          <div className="avatar small">BH</div>
-          <span>Brian</span>
-          <b>⌄</b>
-        </button>
+        <div className="account-wrap">
+          <button className="account-button" onClick={() => setMenuOpen(!menuOpen)}><div className="avatar small">BH</div><span>Brian</span><b>⌄</b></button>
+          {menuOpen && <div className="account-menu">
+            <button onClick={() => { setActive('settings'); setMenuOpen(false) }}>My Profile</button>
+            <button onClick={() => { setActive('settings'); setMenuOpen(false) }}>Account Settings</button>
+            <button disabled>Billing <span>Coming soon</span></button><hr />
+            <button className="signout" onClick={onSignOut}>Sign Out</button>
+          </div>}
+        </div>
       </div>
     </header>
   )
@@ -207,9 +205,9 @@ function Dashboard({ setActive, openOpportunity }) {
         <div>
           <span className="eyebrow">MORNING BRIEFING</span>
           <h2>Good morning, Brian.</h2>
-          <p>Revenue increased 6.2% this month. I found four savings opportunities worth an estimated <strong>$5,332 annually.</strong></p>
+          <p>Since your last visit, revenue increased 4.2%, one unusually large expense was detected, and three new savings opportunities were found. Cash flow remains healthy.</p><div className="briefing-total"><small>Estimated annual savings available</small><strong>$5,332</strong></div>
         </div>
-        <button className="primary" onClick={() => setActive('advisor')}>Ask SmartLedger <span>→</span></button>
+        <button className="primary" onClick={() => setActive('advisor')}>Review Today’s Priorities <span>→</span></button>
       </section>
 
       <section className="metrics">
@@ -377,7 +375,7 @@ function Advisor() {
           ))}
         </div>
         <div className="composer">
-          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Ask SmartLedger about your business..." />
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Review Today’s Priorities about your business..." />
           <button onClick={send}>Send ↑</button>
         </div>
       </article>
@@ -488,38 +486,39 @@ function OpportunityModal({ item, onClose }) {
   )
 }
 
-function App() {
-  const [active, setActive] = useState('dashboard')
-  const [selectedOpportunity, setSelectedOpportunity] = useState(null)
-  const titles = {
-    dashboard: 'Dashboard',
-    radar: 'Opportunity Radar',
-    transactions: 'Transactions',
-    advisor: 'AI Advisor',
-    reports: 'Reports',
-    automations: 'Automations',
-    settings: 'Settings'
-  }
-
-  let content
-  if (active === 'dashboard') content = <Dashboard setActive={setActive} openOpportunity={setSelectedOpportunity} />
-  if (active === 'radar') content = <Radar openOpportunity={setSelectedOpportunity} />
-  if (active === 'transactions') content = <Transactions />
-  if (active === 'advisor') content = <Advisor />
-  if (active === 'reports') content = <Reports />
-  if (active === 'automations') content = <Automations />
-  if (active === 'settings') content = <Settings />
-
-  return (
-    <div className="app-shell">
-      <Sidebar active={active} setActive={setActive} />
-      <main className="main">
-        <Topbar title={titles[active]} />
-        <div className="content">{content}</div>
-      </main>
-      <OpportunityModal item={selectedOpportunity} onClose={() => setSelectedOpportunity(null)} />
-    </div>
-  )
+function LoadingScreen() {
+  return <div className="loading-screen"><div className="loading-brand"><div className="brand-mark"><span /></div><div><strong>SmartLedger AI</strong><small>by Atlas AI</small></div></div><div className="loading-line"><span /></div><p>Loading your workspace...</p></div>
 }
 
+function AuthScreen({ onAuthenticate }) {
+  const [mode,setMode]=useState('signin'); const [email,setEmail]=useState('brian@atlasaiusa.com'); const [password,setPassword]=useState('smartledger'); const [name,setName]=useState('Brian Hess'); const [business,setBusiness]=useState('Atlas AI, LLC'); const [notice,setNotice]=useState('')
+  const submit=e=>{e.preventDefault(); if(mode==='forgot'){setNotice('Password-reset instructions are ready to connect to the live authentication service.');return} if(!email||!password){setNotice('Please complete all required fields.');return} onAuthenticate({email,name,business})}
+  return <div className="auth-shell">
+    <section className="auth-visual"><div className="auth-brand"><div className="brand-mark"><span /></div><div><strong>SmartLedger</strong><small>by Atlas AI</small></div></div><div className="auth-message"><span className="eyebrow">FINANCIAL INTELLIGENCE FOR SMALL BUSINESS</span><h1>Clarity today.<br/>Better decisions tomorrow.</h1><p>SmartLedger watches the numbers, identifies opportunities, and helps business owners take action.</p><div className="auth-proof"><div><strong>$5,332</strong><span>Estimated annual savings</span></div><div><strong>86</strong><span>Financial health score</span></div></div></div><small className="auth-footer">SmartLedger AI Beta 0.2 · Atlas AI, LLC</small></section>
+    <section className="auth-panel"><form className="auth-form" onSubmit={submit}><span className="eyebrow">{mode==='signup'?'CREATE YOUR WORKSPACE':mode==='forgot'?'ACCOUNT RECOVERY':'WELCOME BACK'}</span><h2>{mode==='signup'?'Create your account':mode==='forgot'?'Reset your password':'Sign in to SmartLedger'}</h2><p>{mode==='signup'?'Start your private SmartLedger workspace.':mode==='forgot'?'Enter your email to receive reset instructions.':'Access your business financial workspace.'}</p>
+    {mode==='signup'&&<><label>Full name<input value={name} onChange={e=>setName(e.target.value)}/></label><label>Business name<input value={business} onChange={e=>setBusiness(e.target.value)}/></label></>}
+    <label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>{mode!=='forgot'&&<label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)}/></label>}
+    {mode==='signin'&&<div className="auth-options"><label className="remember"><input type="checkbox" defaultChecked/> Remember me</label><button type="button" onClick={()=>setMode('forgot')}>Forgot password?</button></div>}
+    {notice&&<div className="auth-notice">{notice}</div>}<button className="primary auth-submit" type="submit">{mode==='signup'?'Create account':mode==='forgot'?'Send reset instructions':'Sign in securely'} <span>→</span></button>
+    <div className="auth-switch">{mode==='signin'&&<>New to SmartLedger? <button type="button" onClick={()=>setMode('signup')}>Create an account</button></>}{mode==='signup'&&<>Already have an account? <button type="button" onClick={()=>setMode('signin')}>Sign in</button></>}{mode==='forgot'&&<button type="button" onClick={()=>setMode('signin')}>← Return to sign in</button>}</div><small className="demo-note">Beta demonstration: authentication is stored only in this browser until Supabase is connected.</small></form></section>
+  </div>
+}
+
+function ProductApp({onSignOut}) {
+  const [active,setActive]=useState('dashboard'); const [selectedOpportunity,setSelectedOpportunity]=useState(null)
+  const titles={dashboard:'Dashboard',radar:'Opportunity Radar',transactions:'Transactions',advisor:'AI Advisor',reports:'Reports',automations:'Automations',settings:'Settings'}
+  let content
+  if(active==='dashboard') content=<Dashboard setActive={setActive} openOpportunity={setSelectedOpportunity}/>
+  if(active==='radar') content=<Radar openOpportunity={setSelectedOpportunity}/>
+  if(active==='transactions') content=<Transactions/>; if(active==='advisor') content=<Advisor/>; if(active==='reports') content=<Reports/>; if(active==='automations') content=<Automations/>; if(active==='settings') content=<Settings/>
+  return <div className="app-shell"><Sidebar active={active} setActive={setActive}/><main className="main"><Topbar title={titles[active]} onSignOut={onSignOut} setActive={setActive}/><div className="content">{content}</div></main><OpportunityModal item={selectedOpportunity} onClose={()=>setSelectedOpportunity(null)}/></div>
+}
+
+function App(){
+ const [session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getItem('smartledger-session'))}catch{return null}}); const [loading,setLoading]=useState(Boolean(session))
+ React.useEffect(()=>{if(!session)return; const t=setTimeout(()=>setLoading(false),1200); return()=>clearTimeout(t)},[session])
+ const authenticate=user=>{localStorage.setItem('smartledger-session',JSON.stringify(user));setSession(user);setLoading(true)}
+ const signOut=()=>{localStorage.removeItem('smartledger-session');setSession(null);setLoading(false)}
+ if(!session)return <AuthScreen onAuthenticate={authenticate}/>; if(loading)return <LoadingScreen/>; return <ProductApp onSignOut={signOut}/>
+}
 createRoot(document.getElementById('root')).render(<App />)
