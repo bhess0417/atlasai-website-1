@@ -1,21 +1,20 @@
-# Atlas AI MVP Website
+# SmartLedger AI Beta 0.1
 
-Clean Vite website prepared for GitHub and Vercel deployment.
+Interactive front-end beta built with React and Vite.
+
+## Included
+- Dashboard
+- Opportunity Radar
+- Transactions
+- AI Advisor demo
+- Reports
+- Automations
+- Settings
+- Responsive design
 
 ## Run locally
-
-```bash
 npm install
 npm run dev
-```
 
-## Deploy with Vercel
-
-1. Create a new GitHub repository.
-2. Upload the **contents of this folder** (not the ZIP itself).
-3. Import the repository into Vercel.
-4. Vercel should detect Vite automatically.
-5. Build command: `npm run build`
-6. Output directory: `dist`
-
-The included `vercel.json` already contains the correct Vite deployment settings.
+## Production build
+npm run build
