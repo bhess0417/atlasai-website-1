@@ -1,47 +1,21 @@
-# Atlas SmartLedger — Sprint 11A
+# Atlas AI — SmartLedger v0.11.2
 
-## Financial Import Center
+Sprint 11A.2 stabilization release built from the live GitHub repository.
 
-This release is a complete front-end implementation of the first Sprint 11 package.
+## Fixes
 
-### Working features
-- Drag-and-drop CSV upload
-- File type and size checks
-- CSV parsing with quoted-field support
-- Automatic column detection
-- Manual column mapping
-- Date and currency normalization
-- Required-field validation
-- Possible duplicate detection
-- Debit, credit, and row summaries
-- Transaction preview
-- Import history and rollback of demo history
-- Imported transaction ledger
-- Browser-local storage for safe customer demonstrations
-- Responsive Atlas premium UI
+- Corrected Vite configuration so Vercel can deploy the current code.
+- Left navigation buttons route to working views.
+- Active navigation state is visible.
+- CEO report opens in a full dialog.
+- CEO report closes with the close button or Escape key.
+- Mobile menu opens and closes correctly.
+- Existing CSV import, validation, transaction ledger, and import history remain intact.
 
-### Run locally
-```bash
-npm install
-npm run dev
-```
+## Deployment
 
-### Build for Vercel
-```bash
-npm run build
-```
+Upload every file and folder in this package to the root of the existing GitHub repository, replacing matching files. The important deployment fixes are `package.json` and `vite.config.js`.
 
-### Demo
-Use **Enter Sprint 11A demo**, then either upload a CSV or click **Use included sample data**.
-
-### Important
-This sprint processes and stores demo data in the browser. Production persistence and financial aggregation will use Supabase after the database migration and security review.
-
-
-## Sprint 11A.1 Stabilization
-
-- Fixed left navigation routing and active-page state.
-- Added URL hash navigation for refresh-safe pages.
-- Added working expandable CEO report.
-- Added Escape-key close behavior and visible keyboard focus.
-- Increased navigation click targets for accessibility.
+Vercel settings:
+- Build command: `npm run build`
+- Output directory: `dist`

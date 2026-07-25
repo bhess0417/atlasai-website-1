@@ -1,20 +1,25 @@
 import { BarChart3, Bell, BrainCircuit, CreditCard, LayoutDashboard, Lightbulb, Settings, WalletCards, X } from "lucide-react";
 
-const links = [
-  { label: "Overview", icon: LayoutDashboard, active: true },
-  { label: "AI Opportunities", icon: Lightbulb },
-  { label: "Transactions", icon: WalletCards },
-  { label: "Accounts", icon: CreditCard },
-  { label: "Reports", icon: BarChart3 },
-  { label: "Atlas CFO", icon: BrainCircuit },
-  { label: "Notifications", icon: Bell },
+export const navigationItems = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "opportunities", label: "AI Opportunities", icon: Lightbulb },
+  { id: "transactions", label: "Transactions", icon: WalletCards },
+  { id: "accounts", label: "Accounts", icon: CreditCard },
+  { id: "reports", label: "Reports", icon: BarChart3 },
+  { id: "cfo", label: "Atlas CFO", icon: BrainCircuit },
+  { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
-export default function Sidebar({ open, onClose }) {
+export default function Sidebar({ open, onClose, activePage, onNavigate }) {
+  const navigate = (page) => {
+    onNavigate(page);
+    onClose();
+  };
+
   return (
     <>
-      <div className={`sidebar-backdrop ${open ? "show" : ""}`} onClick={onClose} />
-      <aside className={`sidebar ${open ? "open" : ""}`}>
+      <div className={`sidebar-backdrop ${open ? "show" : ""}`} onClick={onClose} aria-hidden="true" />
+      <aside className={`sidebar ${open ? "open" : ""}`} aria-label="SmartLedger navigation">
         <div className="brand">
           <div className="brand-mark">A</div>
           <div>
@@ -27,8 +32,13 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <nav className="nav-list" aria-label="Main navigation">
-          {links.map(({ label, icon: Icon, active }) => (
-            <button key={label} className={`nav-item ${active ? "active" : ""}`}>
+          {navigationItems.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              className={`nav-item ${activePage === id ? "active" : ""}`}
+              onClick={() => navigate(id)}
+              aria-current={activePage === id ? "page" : undefined}
+            >
               <Icon size={19} />
               <span>{label}</span>
             </button>
@@ -36,7 +46,11 @@ export default function Sidebar({ open, onClose }) {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="nav-item">
+          <button
+            className={`nav-item ${activePage === "settings" ? "active" : ""}`}
+            onClick={() => navigate("settings")}
+            aria-current={activePage === "settings" ? "page" : undefined}
+          >
             <Settings size={19} />
             <span>Settings</span>
           </button>
