@@ -1,6 +1,6 @@
 import { Bell, Menu, Search } from "lucide-react";
 
-export default function Header({ onMenu, onNotifications, pageTitle = "Good afternoon, Brian." }) {
+export default function Header({ onMenu }) {
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -9,7 +9,7 @@ export default function Header({ onMenu, onNotifications, pageTitle = "Good afte
         </button>
         <div>
           <p className="eyebrow">EXECUTIVE FINANCIAL DASHBOARD</p>
-          <h1>{pageTitle}</h1>
+          <h1>Good afternoon, Brian.</h1>
         </div>
       </div>
       <div className="topbar-actions">
@@ -17,7 +17,7 @@ export default function Header({ onMenu, onNotifications, pageTitle = "Good afte
           <Search size={18} />
           <input aria-label="Search SmartLedger" placeholder="Search SmartLedger" />
         </label>
-        <button className="icon-button notification-button" onClick={onNotifications} aria-label="Open notifications">
+        <button className="icon-button notification-button" aria-label="Notifications">
           <Bell size={20} />
           <span className="notification-dot" />
         </button>

@@ -1,7 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
-
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-export const supabaseEnabled = Boolean(url && key && !url.includes('YOUR_PROJECT'));
-export const supabase = supabaseEnabled ? createClient(url, key) : null;
+// Supabase is intentionally disabled in this stabilization build.
+// This keeps the demo deployable without external credentials or packages.
+// A production Supabase client can be restored when the project environment
+// variables and dependency are configured together.
+export const supabaseEnabled = false;
+export const supabase = null;
