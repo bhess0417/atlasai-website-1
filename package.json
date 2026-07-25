@@ -1,6 +1,6 @@
 {
-  "name": "atlas-smartledger-sprint-11a",
-  "version": "11.2.1",
+  "name": "atlas-smartledger",
+  "version": "0.12.1",
   "private": true,
   "type": "module",
   "scripts": {
