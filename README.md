@@ -36,3 +36,12 @@ Use **Enter Sprint 11A demo**, then either upload a CSV or click **Use included 
 
 ### Important
 This sprint processes and stores demo data in the browser. Production persistence and financial aggregation will use Supabase after the database migration and security review.
+
+
+## Sprint 11A.1 Stabilization
+
+- Fixed left navigation routing and active-page state.
+- Added URL hash navigation for refresh-safe pages.
+- Added working expandable CEO report.
+- Added Escape-key close behavior and visible keyboard focus.
+- Increased navigation click targets for accessibility.
