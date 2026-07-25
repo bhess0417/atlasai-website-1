@@ -1,213 +1,175 @@
-
 import './style.css';
+import { supabase, supabaseEnabled } from './supabase.js';
 
 const app = document.querySelector('#app');
+const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-app.innerHTML = `
-<header class="nav">
-  <a class="logo" href="#top"><span class="logo-mark"></span><span>ATLAS AI</span></a>
-  <nav>
-    <a href="#solutions">Solutions</a>
-    <a href="#products">Products</a>
-    <a href="#mission">Mission</a>
-  </nav>
-  <a class="btn btn-outline" href="#contact">Start a conversation</a>
-</header>
+const demoCompanies = [
+  { id: 'atlas', name: 'Atlas AI Demo Company', plan: 'Professional', role: 'Owner' },
+  { id: 'arclight', name: 'ArcLight Customer Trial', plan: 'Enterprise Trial', role: 'Admin' }
+];
 
-<main id="top">
-  <section class="hero shell">
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
+const state = {
+  user: JSON.parse(localStorage.getItem('atlas-user') || 'null'),
+  company: localStorage.getItem('atlas-company') || 'atlas',
+  view: 'dashboard',
+  notifications: 5
+};
 
-    <div class="hero-copy reveal">
-      <p class="kicker">AI THAT WORKS FOR BUSINESS</p>
-      <h1>Practical intelligence.<br><span>Powerful results.</span></h1>
-      <p class="lead">
-        Atlas AI creates clear, useful tools that help small businesses save time,
-        uncover opportunities, and make better decisions.
-      </p>
-      <div class="actions">
-        <a class="btn btn-primary" href="#products">Explore our solutions</a>
-        <a class="btn btn-secondary" href="#contact">Book a conversation</a>
-      </div>
-      <div class="trust">
-        <span>Built for small business</span>
-        <span>Human-centered AI</span>
-        <span>Designed in the USA</span>
-      </div>
-    </div>
+const opportunities = [
+  { title: 'Consolidate software subscriptions', impact: 5040, detail: 'Three overlapping tools can likely be replaced by one platform.', priority: 'High' },
+  { title: 'Renegotiate payment processing', impact: 3600, detail: 'Current fees are above the benchmark for your transaction volume.', priority: 'High' },
+  { title: 'Remove unused mobile lines', impact: 1344, detail: 'Four lines show no meaningful usage in the last 90 days.', priority: 'Medium' }
+];
 
-    <div class="dashboard reveal delay-1">
-      <div class="dash-head">
-        <span>ATLAS INTELLIGENCE</span>
-        <span class="status">LIVE</span>
-      </div>
-      <div class="dash-grid">
-        <div class="metric">
-          <small>Potential monthly savings</small>
-          <strong>$2,840</strong>
-          <span>12 opportunities identified</span>
+function toast(message) {
+  const el = document.querySelector('#toast');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+function authScreen(mode = 'login') {
+  const isRegister = mode === 'register';
+  const isForgot = mode === 'forgot';
+  app.innerHTML = `
+    <main class="auth-shell">
+      <section class="auth-brand-panel">
+        <div class="brand-lockup"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div>
+        <div class="auth-copy">
+          <span class="eyebrow">SECURE FINANCIAL INTELLIGENCE</span>
+          <h1>Clarity for every financial decision.</h1>
+          <p>One protected workspace for savings opportunities, company reporting, team access, and future Atlas products.</p>
+          <div class="auth-proof"><span>✓ Company-level isolation</span><span>✓ Role-based access</span><span>✓ Supabase-ready security</span></div>
         </div>
-        <div class="chart">
-          <div class="chart-label"><span>Opportunity impact</span><small>6 months</small></div>
-          <div class="bars">
-            <i style="height:33%"></i><i style="height:47%"></i><i style="height:41%"></i>
-            <i style="height:62%"></i><i style="height:56%"></i><i style="height:79%"></i>
+        <small class="legal">© 2026 Atlas AI, LLC</small>
+      </section>
+      <section class="auth-form-panel">
+        <form id="authForm" class="auth-card">
+          <span class="status-chip">Sprint 10</span>
+          <h2>${isRegister ? 'Create your workspace' : isForgot ? 'Reset your password' : 'Welcome back'}</h2>
+          <p>${isRegister ? 'Start your secure SmartLedger company account.' : isForgot ? 'Enter your email and we will send reset instructions.' : 'Sign in to your Atlas AI command center.'}</p>
+          ${isRegister ? '<label>Company name<input id="companyName" required placeholder="Your company"></label>' : ''}
+          ${!isForgot ? '<label>Full name<input id="fullName" '+(isRegister ? 'required' : '')+' placeholder="Brian Hess"></label>' : ''}
+          <label>Email address<input id="email" type="email" required placeholder="you@company.com"></label>
+          ${!isForgot ? '<label>Password<input id="password" type="password" required minlength="6" placeholder="••••••••"></label>' : ''}
+          <button class="primary-button" type="submit">${isRegister ? 'Create account' : isForgot ? 'Send reset link' : 'Sign in'}</button>
+          ${!isForgot ? '<button class="demo-button" type="button" id="demoLogin">Enter Sprint 10 demo</button>' : ''}
+          <div class="auth-links">
+            ${mode === 'login' ? '<button type="button" data-auth="forgot">Forgot password?</button><button type="button" data-auth="register">Create account</button>' : '<button type="button" data-auth="login">Back to sign in</button>'}
           </div>
-        </div>
-        <div class="insight">
-          <b>AI</b>
-          <p><strong>New insight</strong><br>Three recurring expenses may be reduced this month.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+          <small class="configuration">${supabaseEnabled ? '● Supabase connected' : '● Demo mode — add .env values to connect Supabase'}</small>
+        </form>
+      </section>
+    </main>`;
 
-  <section class="ticker">
-    <span>FINANCIAL INTELLIGENCE</span>
-    <span>OPPORTUNITY DISCOVERY</span>
-    <span>SMART AUTOMATION</span>
-    <span>DECISION SUPPORT</span>
-  </section>
+  document.querySelectorAll('[data-auth]').forEach(btn => btn.addEventListener('click', () => authScreen(btn.dataset.auth)));
+  document.querySelector('#demoLogin')?.addEventListener('click', () => loginDemo());
+  document.querySelector('#authForm').addEventListener('submit', handleAuth);
+}
 
-  <section id="solutions" class="section shell">
-    <div class="section-heading reveal">
-      <p class="kicker">BUILT FOR REAL-WORLD RESULTS</p>
-      <h2>AI should make business<br><span>simpler, not harder.</span></h2>
-      <p>We focus on practical tools with measurable value: less busywork, stronger visibility, and better decisions.</p>
-    </div>
-    <div class="cards">
-      <article class="card reveal">
-        <div class="icon">↗</div>
-        <h3>Opportunity Radar</h3>
-        <p>Surfaces practical ways to reduce waste, improve margins, and uncover growth opportunities.</p>
-        <a href="#products">Explore capability →</a>
-      </article>
-      <article class="card reveal delay-1">
-        <div class="icon">◎</div>
-        <h3>Financial Intelligence</h3>
-        <p>Turns business activity into clear explanations, forecasts, and next-step recommendations.</p>
-        <a href="#products">Explore capability →</a>
-      </article>
-      <article class="card reveal delay-2">
-        <div class="icon">⚡</div>
-        <h3>Workflow Automation</h3>
-        <p>Eliminates repetitive work so owners can move faster with less administrative drag.</p>
-        <a href="#products">Explore capability →</a>
-      </article>
-    </div>
-  </section>
+async function handleAuth(event) {
+  event.preventDefault();
+  const email = document.querySelector('#email').value.trim();
+  const password = document.querySelector('#password')?.value;
+  const fullName = document.querySelector('#fullName')?.value.trim() || 'Atlas User';
+  const companyName = document.querySelector('#companyName')?.value.trim();
+  const heading = document.querySelector('.auth-card h2').textContent;
 
-  <section id="products" class="products">
-    <div class="shell">
-      <div class="section-heading split reveal">
-        <div>
-          <p class="kicker">THE ATLAS AI PORTFOLIO</p>
-          <h2>Products designed to<br><span>move people forward.</span></h2>
-        </div>
-        <p>Business intelligence, consumer utility, and custom AI systems under one trusted brand.</p>
-      </div>
+  if (heading.includes('Reset')) {
+    if (supabaseEnabled) await supabase.auth.resetPasswordForEmail(email);
+    toast('Password reset instructions prepared.');
+    return;
+  }
+  if (supabaseEnabled) {
+    const result = heading.includes('Create')
+      ? await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, company_name: companyName } } })
+      : await supabase.auth.signInWithPassword({ email, password });
+    if (result.error) return toast(result.error.message);
+  }
+  state.user = { name: fullName || email.split('@')[0], email, role: 'Owner' };
+  localStorage.setItem('atlas-user', JSON.stringify(state.user));
+  renderApp();
+}
 
-      <div class="product-list">
-        <article class="product reveal">
-          <div class="num">01</div>
-          <div>
-            <p class="tag">FLAGSHIP PLATFORM</p>
-            <h3>SmartLedger AI</h3>
-            <p>A financial intelligence platform that helps small businesses understand spending, monitor risk, and act on savings opportunities.</p>
-          </div>
-          <div class="points">
-            <span>Expense intelligence</span>
-            <span>Cash-flow forecasting</span>
-            <span>Vendor analysis</span>
-          </div>
-          <div class="arrow">↗</div>
-        </article>
+function loginDemo() {
+  state.user = { name: 'Brian Hess', email: 'founder@atlasaiusa.com', role: 'Owner' };
+  localStorage.setItem('atlas-user', JSON.stringify(state.user));
+  renderApp();
+}
 
-        <article class="product reveal">
-          <div class="num">02</div>
-          <div>
-            <p class="tag">CONSUMER AI</p>
-            <h3>What's for Dinner?</h3>
-            <p>A personalized meal-planning experience built around budget, time, pantry ingredients, and household preferences.</p>
-          </div>
-          <div class="points">
-            <span>Budget-friendly ideas</span>
-            <span>Pantry matching</span>
-            <span>Personalized planning</span>
-          </div>
-          <div class="arrow">↗</div>
-        </article>
+function renderApp() {
+  const company = demoCompanies.find(c => c.id === state.company) || demoCompanies[0];
+  app.innerHTML = `
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand-lockup sidebar-brand"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div>
+        <nav class="side-nav">
+          ${navItem('dashboard','⌂','Dashboard')}${navItem('company','▦','Company')}${navItem('team','♙','Team & Roles')}${navItem('notifications','♢','Notifications')}${navItem('billing','◇','Billing')}${navItem('settings','⚙','Settings')}
+        </nav>
+        <div class="security-card"><span>◈</span><div><strong>Workspace protected</strong><small>Company isolation active</small></div></div>
+        <button id="logout" class="logout">↪ Sign out</button>
+      </aside>
+      <main class="main-area">
+        <header class="topbar">
+          <button class="menu" id="menu">☰</button>
+          <div class="company-select-wrap"><small>CURRENT WORKSPACE</small><select id="companySelect">${demoCompanies.map(c => `<option value="${c.id}" ${c.id === company.id ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
+          <div class="top-actions"><button id="notificationBell" class="bell">♢<span>${state.notifications}</span></button><div class="user-chip"><span>${initials(state.user.name)}</span><div><strong>${state.user.name}</strong><small>${company.role}</small></div></div></div>
+        </header>
+        <section id="content"></section>
+      </main>
+    </div><div id="toast" class="toast"></div>`;
+  bindShell();
+  renderView();
+}
 
-        <article class="product reveal">
-          <div class="num">03</div>
-          <div>
-            <p class="tag">CUSTOM SOLUTIONS</p>
-            <h3>Atlas AI Studio</h3>
-            <p>Purpose-built AI systems and automations for companies ready to improve a high-value workflow.</p>
-          </div>
-          <div class="points">
-            <span>Workflow discovery</span>
-            <span>Rapid prototyping</span>
-            <span>Scalable delivery</span>
-          </div>
-          <div class="arrow">↗</div>
-        </article>
-      </div>
-    </div>
-  </section>
+function navItem(view, icon, label) { return `<button class="nav-item ${state.view === view ? 'active' : ''}" data-view="${view}"><span>${icon}</span>${label}</button>`; }
+function initials(name) { return name.split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase(); }
 
-  <section id="mission" class="section shell">
-    <div class="mission reveal">
-      <div>
-        <p class="kicker">OUR MISSION</p>
-        <h2>Enterprise-level intelligence.<br><span>Accessible to every business.</span></h2>
-        <p>Atlas AI exists to close the gap between powerful technology and the people who need it most. We build clear, useful systems that help small businesses operate with confidence.</p>
-      </div>
-      <div class="values">
-        <div><b>01</b><span>Practical by design</span></div>
-        <div><b>02</b><span>Built around people</span></div>
-        <div><b>03</b><span>Focused on outcomes</span></div>
-      </div>
-    </div>
-  </section>
+function bindShell() {
+  document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => { state.view = btn.dataset.view; renderApp(); }));
+  document.querySelector('#companySelect').addEventListener('change', e => { state.company = e.target.value; localStorage.setItem('atlas-company', state.company); renderApp(); });
+  document.querySelector('#logout').addEventListener('click', async () => { if (supabaseEnabled) await supabase.auth.signOut(); localStorage.removeItem('atlas-user'); state.user = null; authScreen(); });
+  document.querySelector('#notificationBell').addEventListener('click', () => { state.view = 'notifications'; renderApp(); });
+  document.querySelector('#menu').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
+}
 
-  <section id="contact" class="section shell contact">
-    <div class="contact-box reveal">
-      <div>
-        <p class="kicker">START A CONVERSATION</p>
-        <h2>Ready to discover what AI<br><span>can do for your business?</span></h2>
-        <p>Tell us what is slowing your business down. We will help identify where practical AI can create the greatest value.</p>
-      </div>
-      <a class="btn btn-primary btn-large" href="mailto:hello@atlasaiusa.com?subject=Atlas%20AI%20Conversation">Contact Atlas AI →</a>
-    </div>
-  </section>
-</main>
+function renderView() {
+  const content = document.querySelector('#content');
+  const company = demoCompanies.find(c => c.id === state.company);
+  const views = { dashboard, company: companyView, team, notifications, billing, settings };
+  content.innerHTML = views[state.view](company);
+  bindViewActions();
+}
 
-<footer class="footer shell">
-  <a class="logo" href="#top"><span class="logo-mark"></span><span>ATLAS AI</span></a>
-  <p>Practical intelligence for real businesses.</p>
-  <div class="footer-links">
-    <a href="#solutions">Solutions</a>
-    <a href="#products">Products</a>
-    <a href="#mission">Mission</a>
-    <a href="mailto:hello@atlasaiusa.com">Contact</a>
-  </div>
-  <small>© ${new Date().getFullYear()} Atlas AI, LLC. All rights reserved.</small>
-</footer>
-`;
+function pageHeader(kicker, title, text) { return `<div class="page-header"><div><span class="eyebrow">${kicker}</span><h1>${title}</h1><p>${text}</p></div><span class="plan-chip">${demoCompanies.find(c => c.id === state.company).plan}</span></div>`; }
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.12 });
+function dashboard(company) {
+  return `${pageHeader('FINANCIAL COMMAND CENTER', `Good afternoon, ${state.user.name.split(' ')[0]}`, `${company.name} is secure, synced, and ready for review.`)}
+  <div class="metrics"><article><small>YTD SAVINGS FOUND</small><strong>${money.format(18462)}</strong><span>↑ 22% vs. target</span></article><article><small>ACTIVE OPPORTUNITIES</small><strong>7</strong><span>${money.format(9984)} annual impact</span></article><article><small>TEAM MEMBERS</small><strong>4</strong><span>2 roles assigned</span></article><article><small>SECURITY STATUS</small><strong class="secure-text">Protected</strong><span>RLS architecture ready</span></article></div>
+  <div class="dashboard-grid"><article class="panel opportunity-panel"><div class="panel-heading"><div><small>ATLAS OPPORTUNITY RADAR</small><h2>Prioritized savings</h2></div><button class="text-button" data-action="review">Review all</button></div>${opportunities.map(o => `<div class="opportunity"><span class="priority ${o.priority.toLowerCase()}">${o.priority}</span><div><strong>${o.title}</strong><p>${o.detail}</p></div><b>${money.format(o.impact)}/yr</b></div>`).join('')}</article>
+  <article class="panel readiness"><small>SPRINT 10 READINESS</small><h2>Commercial foundation</h2><div class="ring"><strong>82%</strong><span>ready</span></div><ul><li class="done">Authentication foundation</li><li class="done">Company workspaces</li><li class="done">Roles and permissions</li><li>Live Supabase configuration</li></ul></article></div>`;
+}
 
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+function companyView(company) { return `${pageHeader('COMPANY WORKSPACE','Company profile','Manage the identity and operating details for this protected workspace.')}<form class="panel form-grid" id="companyForm"><label>Company name<input value="${company.name}"></label><label>Workspace ID<input value="${company.id}" disabled></label><label>Industry<select><option>Technology</option><option>Professional Services</option><option>Construction</option><option>Retail</option></select></label><label>Fiscal year begins<select><option>January</option><option>July</option></select></label><label class="wide">Company logo<div class="upload-box">A <span>Upload logo</span></div></label><button class="primary-button fit" type="submit">Save company</button></form>`; }
 
-window.addEventListener('scroll', () => {
-  document.querySelector('.nav')?.classList.toggle('scrolled', window.scrollY > 12);
-});
+function team() { const members=[['Brian Hess','Owner','Full access'],['Morgan Lee','Admin','Manage users and accounts'],['Jordan Kim','Accountant','Reports and exports'],['Taylor Reed','Employee','Dashboard view']]; return `${pageHeader('ACCESS CONTROL','Team and roles','Control who can enter this company workspace and what they can do.')}<div class="panel"><div class="panel-heading"><div><small>4 ACTIVE USERS</small><h2>Workspace members</h2></div><button class="primary-button fit" data-action="invite">+ Invite user</button></div><div class="member-list">${members.map(m=>`<div><span class="avatar-small">${initials(m[0])}</span><div><strong>${m[0]}</strong><small>${m[2]}</small></div><select><option selected>${m[1]}</option><option>Owner</option><option>Admin</option><option>Accountant</option><option>Employee</option></select></div>`).join('')}</div></div>`; }
+
+function notifications() { return `${pageHeader('NOTIFICATION CENTER','What needs attention','Five recent events across your SmartLedger workspace.')}<div class="panel notification-list">${[['New savings opportunity','Atlas identified overlapping software subscriptions.','2 min ago'],['Bank sync complete','All connected demo accounts are current.','18 min ago'],['Monthly report ready','Your executive financial summary is prepared.','Today'],['Team member invited','Jordan Kim received workspace access.','Yesterday'],['Security review passed','No cross-company access issues were detected.','Yesterday']].map((n,i)=>`<article><span>${i<2?'●':'○'}</span><div><strong>${n[0]}</strong><p>${n[1]}</p></div><small>${n[2]}</small></article>`).join('')}<button class="demo-button fit" data-action="read">Mark all as read</button></div>`; }
+
+function billing(company) { return `${pageHeader('SUBSCRIPTION FOUNDATION','Billing and plan','The payment connection is staged for a future Stripe integration.')}<div class="billing-grid"><article class="panel current-plan"><small>CURRENT PLAN</small><h2>${company.plan}</h2><strong>Founding customer access</strong><p>Authentication, company workspaces, team roles, reports, and priority support.</p><button class="primary-button" data-action="billing">Manage subscription</button></article><article class="panel"><small>PLANNED TIERS</small><div class="tier"><b>Starter</b><span>Core monitoring</span></div><div class="tier featured"><b>Professional</b><span>AI insights + teams</span></div><div class="tier"><b>Enterprise</b><span>Multi-company controls</span></div></article></div>`; }
+
+function settings() { return `${pageHeader('PERSONAL SETTINGS','Profile and preferences','Manage your account, password, appearance, and alerts.')}<form id="settingsForm" class="panel form-grid"><label>Full name<input value="${state.user.name}"></label><label>Email<input type="email" value="${state.user.email}"></label><label>Role<input value="${state.user.role}" disabled></label><label>Theme<select><option>Atlas Dark</option><option>System default</option></select></label><label class="toggle-row wide"><span><strong>Opportunity alerts</strong><small>Notify me when Atlas finds new savings.</small></span><input type="checkbox" checked></label><label class="toggle-row wide"><span><strong>Monthly reports</strong><small>Prepare an executive summary each month.</small></span><input type="checkbox" checked></label><button class="primary-button fit" type="submit">Save settings</button></form>`; }
+
+function bindViewActions() {
+  document.querySelector('#companyForm')?.addEventListener('submit', e => { e.preventDefault(); toast('Company settings saved.'); });
+  document.querySelector('#settingsForm')?.addEventListener('submit', e => { e.preventDefault(); toast('Profile settings saved.'); });
+  document.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', () => {
+    const messages = { review:'Opportunity report opened.', invite:'Invitation workflow is ready for backend connection.', read:'All notifications marked as read.', billing:'Billing portal placeholder opened.' };
+    if (btn.dataset.action === 'read') { state.notifications = 0; }
+    toast(messages[btn.dataset.action] || 'Action complete.');
+  }));
+}
+
+if (state.user) renderApp(); else authScreen();

@@ -1,44 +1,43 @@
-# SmartLedger AI — Sprint 9
+# Atlas AI — SmartLedger Sprint 10
 
-This is the working Sprint 9 dashboard build for Atlas AI.
+Sprint 10 adds the identity and company-workspace foundation for SmartLedger.
 
 ## Included
 
-- Premium executive dashboard
-- Savings YTD and monthly savings
-- Financial Health Score
-- Atlas CFO daily briefing
-- AI Opportunity Center
-- Cash flow and savings charts
-- Impact Timeline
-- Responsive mobile navigation
-- Vite + React project
-- Vercel configuration
+- Premium responsive SmartLedger dashboard
+- Login, registration, password-reset, and demo-access screens
+- Persistent local demo sessions
+- Supabase authentication integration (activated by environment variables)
+- Company workspace switcher
+- Owner, Admin, Accountant, and Employee roles
+- Team-management interface
+- Notification center
+- Profile/company settings
+- Billing-plan foundation
+- Supabase schema and Row-Level Security starter policies
+- Vercel-ready configuration
 
-## Run locally
+## Test immediately
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build for deployment
+On the login screen, choose **Enter Sprint 10 demo**.
 
-```bash
-npm run build
-```
+## Connect Supabase
 
-## Deploy through GitHub and Vercel
+1. Create a Supabase project.
+2. Copy `.env.example` to `.env`.
+3. Add the project URL and anonymous key.
+4. Open the Supabase SQL Editor and run `supabase/schema.sql`.
+5. Restart the development server.
 
-1. Extract the ZIP.
-2. Upload the **contents inside the extracted folder** to the root of your GitHub repository.
-3. Commit the files.
-4. Vercel should detect Vite and deploy automatically.
-5. Build command: `npm run build`
-6. Output directory: `dist`
+## Upload to GitHub
 
-The dashboard currently uses centralized mock data in:
+Upload the **contents of this folder**, not the ZIP file itself. Commit the files, then allow Vercel to redeploy.
 
-`src/data/mockData.js`
+## Important
 
-Sprint 10 can replace that mock data with Supabase authentication and persistent company data.
+The interface and demo workflow are complete. Live production onboarding still requires server-side company creation, invitation emails, Stripe billing, and expanded RLS policies as those features are connected in later sprints.
