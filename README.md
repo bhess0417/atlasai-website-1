@@ -1,43 +1,38 @@
-# Atlas AI — SmartLedger Sprint 10
+# Atlas SmartLedger — Sprint 11A
 
-Sprint 10 adds the identity and company-workspace foundation for SmartLedger.
+## Financial Import Center
 
-## Included
+This release is a complete front-end implementation of the first Sprint 11 package.
 
-- Premium responsive SmartLedger dashboard
-- Login, registration, password-reset, and demo-access screens
-- Persistent local demo sessions
-- Supabase authentication integration (activated by environment variables)
-- Company workspace switcher
-- Owner, Admin, Accountant, and Employee roles
-- Team-management interface
-- Notification center
-- Profile/company settings
-- Billing-plan foundation
-- Supabase schema and Row-Level Security starter policies
-- Vercel-ready configuration
+### Working features
+- Drag-and-drop CSV upload
+- File type and size checks
+- CSV parsing with quoted-field support
+- Automatic column detection
+- Manual column mapping
+- Date and currency normalization
+- Required-field validation
+- Possible duplicate detection
+- Debit, credit, and row summaries
+- Transaction preview
+- Import history and rollback of demo history
+- Imported transaction ledger
+- Browser-local storage for safe customer demonstrations
+- Responsive Atlas premium UI
 
-## Test immediately
-
+### Run locally
 ```bash
 npm install
 npm run dev
 ```
 
-On the login screen, choose **Enter Sprint 10 demo**.
+### Build for Vercel
+```bash
+npm run build
+```
 
-## Connect Supabase
+### Demo
+Use **Enter Sprint 11A demo**, then either upload a CSV or click **Use included sample data**.
 
-1. Create a Supabase project.
-2. Copy `.env.example` to `.env`.
-3. Add the project URL and anonymous key.
-4. Open the Supabase SQL Editor and run `supabase/schema.sql`.
-5. Restart the development server.
-
-## Upload to GitHub
-
-Upload the **contents of this folder**, not the ZIP file itself. Commit the files, then allow Vercel to redeploy.
-
-## Important
-
-The interface and demo workflow are complete. Live production onboarding still requires server-side company creation, invitation emails, Stripe billing, and expanded RLS policies as those features are connected in later sprints.
+### Important
+This sprint processes and stores demo data in the browser. Production persistence and financial aggregation will use Supabase after the database migration and security review.

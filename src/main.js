@@ -1,175 +1,43 @@
 import './style.css';
 import { supabase, supabaseEnabled } from './supabase.js';
+import { parseCsv, detectMapping, normalizeTransactions, validateTransactions } from './csv.js';
+import { getImportHistory, saveImport, removeImport, clearImports } from './importStore.js';
 
 const app = document.querySelector('#app');
-const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const money = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+const dateFmt = new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric'});
+const companies=[{id:'atlas',name:'Atlas AI Demo Company',plan:'Professional',role:'Owner'},{id:'arclight',name:'ArcLight Customer Trial',plan:'Enterprise Trial',role:'Admin'}];
+const state={user:JSON.parse(localStorage.getItem('atlas-user')||'null'),company:localStorage.getItem('atlas-company')||'atlas',view:'imports',step:1,file:null,raw:null,mapping:{},validation:null};
 
-const demoCompanies = [
-  { id: 'atlas', name: 'Atlas AI Demo Company', plan: 'Professional', role: 'Owner' },
-  { id: 'arclight', name: 'ArcLight Customer Trial', plan: 'Enterprise Trial', role: 'Admin' }
-];
+function toast(message){const el=document.querySelector('#toast');if(!el)return;el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200)}
+function initials(name){return name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}
+function loginDemo(){state.user={name:'Brian Hess',email:'founder@atlasaiusa.com',role:'Owner'};localStorage.setItem('atlas-user',JSON.stringify(state.user));renderApp()}
 
-const state = {
-  user: JSON.parse(localStorage.getItem('atlas-user') || 'null'),
-  company: localStorage.getItem('atlas-company') || 'atlas',
-  view: 'dashboard',
-  notifications: 5
-};
+function authScreen(){app.innerHTML=`<main class="auth-shell"><section class="auth-brand-panel"><div class="brand-lockup"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div><div class="auth-copy"><span class="eyebrow">SPRINT 11A · FINANCIAL DATA HUB</span><h1>Bring financial data into focus.</h1><p>Upload a statement, verify every column, and prepare clean transactions for Atlas intelligence.</p><div class="auth-proof"><span>✓ Local CSV processing</span><span>✓ Validation before import</span><span>✓ Import history and rollback</span></div></div><small class="legal">© 2026 Atlas AI, LLC</small></section><section class="auth-form-panel"><div class="auth-card"><span class="status-chip">Sprint 11A</span><h2>Financial Import Center</h2><p>Enter the working demo to test CSV upload, automatic mapping, validation, preview, and import history.</p><button id="demoLogin" class="primary-button">Enter Sprint 11A demo</button><small class="configuration">${supabaseEnabled?'● Supabase connected':'● Demo mode · CSV files stay in this browser'}</small></div></section></main>`;document.querySelector('#demoLogin').onclick=loginDemo}
 
-const opportunities = [
-  { title: 'Consolidate software subscriptions', impact: 5040, detail: 'Three overlapping tools can likely be replaced by one platform.', priority: 'High' },
-  { title: 'Renegotiate payment processing', impact: 3600, detail: 'Current fees are above the benchmark for your transaction volume.', priority: 'High' },
-  { title: 'Remove unused mobile lines', impact: 1344, detail: 'Four lines show no meaningful usage in the last 90 days.', priority: 'Medium' }
-];
+function navItem(view,icon,label){return `<button class="nav-item ${state.view===view?'active':''}" data-view="${view}"><span>${icon}</span>${label}</button>`}
+function renderApp(){const company=companies.find(c=>c.id===state.company)||companies[0];app.innerHTML=`<div class="app-shell"><aside class="sidebar" id="sidebar"><div class="brand-lockup sidebar-brand"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div><nav class="side-nav">${navItem('dashboard','⌂','Dashboard')}${navItem('imports','⇧','Financial Imports')}${navItem('transactions','≡','Transactions')}${navItem('history','◷','Import History')}${navItem('settings','⚙','Settings')}</nav><div class="security-card"><span>◈</span><div><strong>Private processing</strong><small>Files remain in your browser</small></div></div><button id="logout" class="logout">↪ Sign out</button></aside><main class="main-area"><header class="topbar"><button class="menu" id="menu">☰</button><div class="company-select-wrap"><small>CURRENT WORKSPACE</small><select id="companySelect">${companies.map(c=>`<option value="${c.id}" ${c.id===company.id?'selected':''}>${c.name}</option>`).join('')}</select></div><div class="top-actions"><span class="sprint-chip">SPRINT 11A</span><div class="user-chip"><span>${initials(state.user.name)}</span><div><strong>${state.user.name}</strong><small>${company.role}</small></div></div></div></header><section id="content"></section></main></div><div id="toast" class="toast"></div>`;bindShell();renderView()}
+function bindShell(){document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{state.view=b.dataset.view;renderApp()});document.querySelector('#companySelect').onchange=e=>{state.company=e.target.value;localStorage.setItem('atlas-company',state.company)};document.querySelector('#logout').onclick=async()=>{if(supabaseEnabled)await supabase.auth.signOut();localStorage.removeItem('atlas-user');state.user=null;authScreen()};document.querySelector('#menu').onclick=()=>document.querySelector('#sidebar').classList.toggle('open')}
+function header(k,t,p){return `<div class="page-header"><div><span class="eyebrow">${k}</span><h1>${t}</h1><p>${p}</p></div><span class="plan-chip">Financial Data Hub</span></div>`}
+function renderView(){const content=document.querySelector('#content');const views={dashboard,imports,transactions,history,settings};content.innerHTML=views[state.view]();bindView()}
 
-function toast(message) {
-  const el = document.querySelector('#toast');
-  if (!el) return;
-  el.textContent = message;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2400);
-}
+function dashboard(){const h=getImportHistory();const total=h.reduce((s,x)=>s+x.rows,0);return `${header('SMARTLEDGER COMMAND CENTER','Financial data is ready for intelligence.','Sprint 11A creates the clean import foundation for categorization, savings detection, and forecasting.')}<div class="metrics"><article><small>TRANSACTIONS IMPORTED</small><strong>${total.toLocaleString()}</strong><span>${h.length} completed imports</span></article><article><small>LAST IMPORT</small><strong>${h[0]?dateFmt.format(new Date(h[0].createdAt)):'None'}</strong><span>${h[0]?.filename||'Upload your first CSV'}</span></article><article><small>VALIDATION RATE</small><strong>${h[0]?h[0].validRate+'%':'—'}</strong><span>Checked before every import</span></article><article><small>DATA STATUS</small><strong class="secure-text">Protected</strong><span>Processed locally in demo mode</span></article></div><div class="dashboard-grid"><article class="panel"><small>NEXT ACTION</small><h2>Import a bank or card statement</h2><p class="muted">SmartLedger will identify columns, normalize dates and amounts, flag incomplete rows, and preview the result before anything is saved.</p><button class="primary-button fit" data-action="new-import">Start CSV import</button></article><article class="panel readiness"><small>SPRINT 11A COMPLETION</small><div class="ring"><strong>100%</strong><span>BUILD READY</span></div><ul><li class="done">CSV parser</li><li class="done">Automatic mapping</li><li class="done">Validation and duplicates</li><li class="done">Import history</li></ul></article></div>`}
 
-function authScreen(mode = 'login') {
-  const isRegister = mode === 'register';
-  const isForgot = mode === 'forgot';
-  app.innerHTML = `
-    <main class="auth-shell">
-      <section class="auth-brand-panel">
-        <div class="brand-lockup"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div>
-        <div class="auth-copy">
-          <span class="eyebrow">SECURE FINANCIAL INTELLIGENCE</span>
-          <h1>Clarity for every financial decision.</h1>
-          <p>One protected workspace for savings opportunities, company reporting, team access, and future Atlas products.</p>
-          <div class="auth-proof"><span>✓ Company-level isolation</span><span>✓ Role-based access</span><span>✓ Supabase-ready security</span></div>
-        </div>
-        <small class="legal">© 2026 Atlas AI, LLC</small>
-      </section>
-      <section class="auth-form-panel">
-        <form id="authForm" class="auth-card">
-          <span class="status-chip">Sprint 10</span>
-          <h2>${isRegister ? 'Create your workspace' : isForgot ? 'Reset your password' : 'Welcome back'}</h2>
-          <p>${isRegister ? 'Start your secure SmartLedger company account.' : isForgot ? 'Enter your email and we will send reset instructions.' : 'Sign in to your Atlas AI command center.'}</p>
-          ${isRegister ? '<label>Company name<input id="companyName" required placeholder="Your company"></label>' : ''}
-          ${!isForgot ? '<label>Full name<input id="fullName" '+(isRegister ? 'required' : '')+' placeholder="Brian Hess"></label>' : ''}
-          <label>Email address<input id="email" type="email" required placeholder="you@company.com"></label>
-          ${!isForgot ? '<label>Password<input id="password" type="password" required minlength="6" placeholder="••••••••"></label>' : ''}
-          <button class="primary-button" type="submit">${isRegister ? 'Create account' : isForgot ? 'Send reset link' : 'Sign in'}</button>
-          ${!isForgot ? '<button class="demo-button" type="button" id="demoLogin">Enter Sprint 10 demo</button>' : ''}
-          <div class="auth-links">
-            ${mode === 'login' ? '<button type="button" data-auth="forgot">Forgot password?</button><button type="button" data-auth="register">Create account</button>' : '<button type="button" data-auth="login">Back to sign in</button>'}
-          </div>
-          <small class="configuration">${supabaseEnabled ? '● Supabase connected' : '● Demo mode — add .env values to connect Supabase'}</small>
-        </form>
-      </section>
-    </main>`;
+function imports(){return `${header('FINANCIAL IMPORT CENTER','Import financial transactions','Upload, map, validate, preview, and save a CSV statement in five guided steps.')}<div class="stepper">${['Upload','Map columns','Validate','Preview','Complete'].map((x,i)=>`<div class="step ${state.step===i+1?'active':''} ${state.step>i+1?'done':''}"><span>${state.step>i+1?'✓':i+1}</span><b>${x}</b></div>`).join('')}</div><article class="panel import-panel">${importStep()}</article>`}
+function importStep(){if(state.step===1)return `<div class="import-intro"><span class="upload-icon">⇧</span><h2>Upload a CSV statement</h2><p>Use a transaction export from your bank, credit card, or accounting system.</p><label class="drop-zone" id="dropZone"><input id="fileInput" type="file" accept=".csv,text/csv"><strong>Drop CSV file here</strong><span>or click to browse</span><small>Maximum recommended size: 10 MB</small></label><button class="demo-button sample-button" data-action="sample">Use included sample data</button></div>`;
+if(state.step===2)return `<div class="mapping"><div class="panel-heading"><div><small>FILE</small><h2>${state.file?.name||'sample-transactions.csv'}</h2></div><span class="row-chip">${state.raw.rows.length} rows detected</span></div><p class="muted">Confirm which source column belongs to each SmartLedger field.</p><div class="mapping-grid">${[['date','Transaction date',true],['vendor','Vendor / merchant',false],['description','Description',true],['amount','Debit / amount',true],['credit','Credit / deposit',false],['category','Category',false],['balance','Balance',false]].map(([key,label,required])=>`<label>${label}${required?' *':''}<select data-map="${key}"><option value="">Not mapped</option>${state.raw.headers.map(h=>`<option value="${h}" ${state.mapping[key]===h?'selected':''}>${h}</option>`).join('')}</select></label>`).join('')}</div><div class="wizard-actions"><button class="demo-button fit" data-action="back">Back</button><button class="primary-button fit" data-action="validate">Validate transactions</button></div></div>`;
+if(state.step===3){const s=state.validation.summary;return `<div><div class="validation-hero ${s.invalid?'warning':'success'}"><span>${s.invalid?'!':'✓'}</span><div><h2>${s.invalid?'Review recommended':'Validation passed'}</h2><p>${s.valid} of ${s.total} rows are ready to import.</p></div></div><div class="validation-grid"><article><small>TOTAL ROWS</small><strong>${s.total}</strong></article><article><small>VALID</small><strong>${s.valid}</strong></article><article><small>NEEDS REVIEW</small><strong>${s.invalid}</strong></article><article><small>POSSIBLE DUPLICATES</small><strong>${s.duplicates}</strong></article><article><small>DEBITS</small><strong>${money.format(s.debits)}</strong></article><article><small>CREDITS</small><strong>${money.format(s.credits)}</strong></article></div><div class="wizard-actions"><button class="demo-button fit" data-action="back">Back</button><button class="primary-button fit" data-action="preview">Preview import</button></div></div>`}
+if(state.step===4)return `<div><div class="panel-heading"><div><small>TRANSACTION PREVIEW</small><h2>Confirm before import</h2></div><span class="row-chip">Showing first 12 rows</span></div>${transactionTable(state.validation.rows.slice(0,12))}<div class="wizard-actions"><button class="demo-button fit" data-action="back">Back</button><button class="primary-button fit" data-action="commit">Import ${state.validation.summary.valid} transactions</button></div></div>`;
+return `<div class="completion"><span>✓</span><h2>Import complete</h2><p>${state.validation.summary.valid} transactions are now available to SmartLedger.</p><div class="completion-card"><small>WHAT HAPPENS NEXT</small><strong>Sprint 11B will categorize transactions, normalize vendors, and detect duplicate payments.</strong></div><button class="primary-button fit" data-action="another">Import another CSV</button><button class="demo-button fit" data-action="view-history">View import history</button></div>`}
 
-  document.querySelectorAll('[data-auth]').forEach(btn => btn.addEventListener('click', () => authScreen(btn.dataset.auth)));
-  document.querySelector('#demoLogin')?.addEventListener('click', () => loginDemo());
-  document.querySelector('#authForm').addEventListener('submit', handleAuth);
-}
+function transactionTable(rows){return `<div class="table-wrap"><table><thead><tr><th>Status</th><th>Date</th><th>Vendor</th><th>Description</th><th>Amount</th><th>Category</th></tr></thead><tbody>${rows.map(tx=>`<tr><td><span class="status-dot ${tx.valid?'ok':'bad'}"></span>${tx.duplicate?'Duplicate?':tx.valid?'Ready':'Review'}</td><td>${tx.date||tx.dateRaw||'—'}</td><td>${tx.vendor}</td><td>${tx.description}</td><td class="amount ${tx.amount>=0?'credit':'debit'}">${money.format(tx.amount)}</td><td>${tx.category}</td></tr>`).join('')}</tbody></table></div>`}
+function transactions(){const tx=JSON.parse(localStorage.getItem('atlas-transactions')||'[]');return `${header('TRANSACTIONS','Imported transaction ledger','Review the latest transactions stored by the Financial Import Center.')}<article class="panel">${tx.length?transactionTable(tx.slice(0,100)):`<div class="empty"><h2>No transactions yet</h2><p>Complete a CSV import to populate this ledger.</p><button class="primary-button fit" data-action="new-import">Start import</button></div>`}</article>`}
+function history(){const h=getImportHistory();return `${header('IMPORT HISTORY','Every import, clearly documented','Review source files, quality results, and completed transaction counts.')}<article class="panel"><div class="panel-heading"><div><small>AUDIT TRAIL</small><h2>${h.length} completed imports</h2></div>${h.length?'<button class="text-button" data-action="clear">Clear demo history</button>':''}</div>${h.length?`<div class="history-list">${h.map(x=>`<div><span class="file-badge">CSV</span><div><strong>${x.filename}</strong><small>${dateFmt.format(new Date(x.createdAt))} · ${x.rows} transactions · ${x.validRate}% valid</small></div><b>${money.format(x.debits)} debits</b><button class="icon-button" data-remove="${x.id}" title="Remove record">×</button></div>`).join('')}</div>`:`<div class="empty"><h2>No imports recorded</h2><p>Your completed CSV imports will appear here.</p></div>`}</article>`}
+function settings(){return `${header('IMPORT SETTINGS','Financial data preferences','Configure safe defaults for future SmartLedger imports.')}<article class="panel form-grid"><label>Default currency<select><option>USD — US Dollar</option></select></label><label>Date format<select><option>Automatic detection</option><option>MM/DD/YYYY</option><option>YYYY-MM-DD</option></select></label><label class="toggle-row wide"><div><strong>Duplicate detection</strong><small>Flag matching date, vendor, and amount combinations.</small></div><input type="checkbox" checked></label><label class="toggle-row wide"><div><strong>Skip invalid rows</strong><small>Only import transactions that pass validation.</small></div><input type="checkbox" checked></label><button class="primary-button fit" data-action="save">Save settings</button></article>`}
 
-async function handleAuth(event) {
-  event.preventDefault();
-  const email = document.querySelector('#email').value.trim();
-  const password = document.querySelector('#password')?.value;
-  const fullName = document.querySelector('#fullName')?.value.trim() || 'Atlas User';
-  const companyName = document.querySelector('#companyName')?.value.trim();
-  const heading = document.querySelector('.auth-card h2').textContent;
+function bindView(){document.querySelectorAll('[data-action]').forEach(btn=>btn.onclick=()=>action(btn.dataset.action));document.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{removeImport(btn.dataset.remove);renderApp();toast('Import record removed')});document.querySelectorAll('[data-map]').forEach(sel=>sel.onchange=e=>state.mapping[e.target.dataset.map]=e.target.value);const input=document.querySelector('#fileInput');if(input)input.onchange=e=>loadFile(e.target.files[0]);const drop=document.querySelector('#dropZone');if(drop){['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragging')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragging')}));drop.addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]))}}
+async function loadFile(file){if(!file)return;if(!file.name.toLowerCase().endsWith('.csv'))return toast('Please choose a CSV file');if(file.size>10*1024*1024)return toast('CSV is larger than 10 MB');const raw=parseCsv(await file.text());if(!raw.rows.length)return toast('No transaction rows found');state.file=file;state.raw=raw;state.mapping=detectMapping(raw.headers);state.step=2;renderApp()}
+function useSample(){const text=`Date,Description,Vendor,Debit,Credit,Category,Balance\n07/01/2026,Adobe Creative Cloud,ADOBE,64.99,,Software,18435.01\n07/02/2026,Customer payment,ACME CLIENT,,4250.00,Income,22685.01\n07/03/2026,Fuel purchase,SHELL 0421,186.42,,Fuel,22498.59\n07/03/2026,Fuel purchase,SHELL 0421,186.42,,Fuel,22312.17\n07/05/2026,Office supplies,AMZN MKTPLACE,242.18,,Office Supplies,22069.99\n07/06/2026,Electric utility,CITY ELECTRIC,584.10,,Utilities,21485.89\n07/08/2026,Payroll processing,GUSTO,8450.00,,Payroll,13035.89\n07/09/2026,Consulting revenue,NORTHSTAR LLC,,6200.00,Income,19235.89`;state.file={name:'sample-transactions.csv',size:text.length};state.raw=parseCsv(text);state.mapping=detectMapping(state.raw.headers);state.step=2;renderApp()}
+function action(name){if(name==='sample')return useSample();if(name==='new-import'){state.view='imports';state.step=1;renderApp();return}if(name==='back'){state.step=Math.max(1,state.step-1);renderApp();return}if(name==='validate'){if(!state.mapping.date||!state.mapping.description||!state.mapping.amount)return toast('Map date, description, and amount');state.validation=validateTransactions(normalizeTransactions(state.raw.rows,state.mapping));state.step=3;renderApp();return}if(name==='preview'){state.step=4;renderApp();return}if(name==='commit'){const valid=state.validation.rows.filter(x=>x.valid);const s=state.validation.summary;saveImport({id:crypto.randomUUID(),filename:state.file?.name||'statement.csv',createdAt:new Date().toISOString(),rows:valid.length,validRate:Math.round((s.valid/s.total)*100),debits:s.debits,credits:s.credits},valid);state.step=5;renderApp();return}if(name==='another'){state.step=1;state.file=null;state.raw=null;state.mapping={};state.validation=null;renderApp();return}if(name==='view-history'){state.view='history';renderApp();return}if(name==='clear'){clearImports();renderApp();toast('Demo import data cleared');return}if(name==='save')toast('Import settings saved')}
 
-  if (heading.includes('Reset')) {
-    if (supabaseEnabled) await supabase.auth.resetPasswordForEmail(email);
-    toast('Password reset instructions prepared.');
-    return;
-  }
-  if (supabaseEnabled) {
-    const result = heading.includes('Create')
-      ? await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, company_name: companyName } } })
-      : await supabase.auth.signInWithPassword({ email, password });
-    if (result.error) return toast(result.error.message);
-  }
-  state.user = { name: fullName || email.split('@')[0], email, role: 'Owner' };
-  localStorage.setItem('atlas-user', JSON.stringify(state.user));
-  renderApp();
-}
-
-function loginDemo() {
-  state.user = { name: 'Brian Hess', email: 'founder@atlasaiusa.com', role: 'Owner' };
-  localStorage.setItem('atlas-user', JSON.stringify(state.user));
-  renderApp();
-}
-
-function renderApp() {
-  const company = demoCompanies.find(c => c.id === state.company) || demoCompanies[0];
-  app.innerHTML = `
-    <div class="app-shell">
-      <aside class="sidebar" id="sidebar">
-        <div class="brand-lockup sidebar-brand"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div>
-        <nav class="side-nav">
-          ${navItem('dashboard','⌂','Dashboard')}${navItem('company','▦','Company')}${navItem('team','♙','Team & Roles')}${navItem('notifications','♢','Notifications')}${navItem('billing','◇','Billing')}${navItem('settings','⚙','Settings')}
-        </nav>
-        <div class="security-card"><span>◈</span><div><strong>Workspace protected</strong><small>Company isolation active</small></div></div>
-        <button id="logout" class="logout">↪ Sign out</button>
-      </aside>
-      <main class="main-area">
-        <header class="topbar">
-          <button class="menu" id="menu">☰</button>
-          <div class="company-select-wrap"><small>CURRENT WORKSPACE</small><select id="companySelect">${demoCompanies.map(c => `<option value="${c.id}" ${c.id === company.id ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
-          <div class="top-actions"><button id="notificationBell" class="bell">♢<span>${state.notifications}</span></button><div class="user-chip"><span>${initials(state.user.name)}</span><div><strong>${state.user.name}</strong><small>${company.role}</small></div></div></div>
-        </header>
-        <section id="content"></section>
-      </main>
-    </div><div id="toast" class="toast"></div>`;
-  bindShell();
-  renderView();
-}
-
-function navItem(view, icon, label) { return `<button class="nav-item ${state.view === view ? 'active' : ''}" data-view="${view}"><span>${icon}</span>${label}</button>`; }
-function initials(name) { return name.split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase(); }
-
-function bindShell() {
-  document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => { state.view = btn.dataset.view; renderApp(); }));
-  document.querySelector('#companySelect').addEventListener('change', e => { state.company = e.target.value; localStorage.setItem('atlas-company', state.company); renderApp(); });
-  document.querySelector('#logout').addEventListener('click', async () => { if (supabaseEnabled) await supabase.auth.signOut(); localStorage.removeItem('atlas-user'); state.user = null; authScreen(); });
-  document.querySelector('#notificationBell').addEventListener('click', () => { state.view = 'notifications'; renderApp(); });
-  document.querySelector('#menu').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
-}
-
-function renderView() {
-  const content = document.querySelector('#content');
-  const company = demoCompanies.find(c => c.id === state.company);
-  const views = { dashboard, company: companyView, team, notifications, billing, settings };
-  content.innerHTML = views[state.view](company);
-  bindViewActions();
-}
-
-function pageHeader(kicker, title, text) { return `<div class="page-header"><div><span class="eyebrow">${kicker}</span><h1>${title}</h1><p>${text}</p></div><span class="plan-chip">${demoCompanies.find(c => c.id === state.company).plan}</span></div>`; }
-
-function dashboard(company) {
-  return `${pageHeader('FINANCIAL COMMAND CENTER', `Good afternoon, ${state.user.name.split(' ')[0]}`, `${company.name} is secure, synced, and ready for review.`)}
-  <div class="metrics"><article><small>YTD SAVINGS FOUND</small><strong>${money.format(18462)}</strong><span>↑ 22% vs. target</span></article><article><small>ACTIVE OPPORTUNITIES</small><strong>7</strong><span>${money.format(9984)} annual impact</span></article><article><small>TEAM MEMBERS</small><strong>4</strong><span>2 roles assigned</span></article><article><small>SECURITY STATUS</small><strong class="secure-text">Protected</strong><span>RLS architecture ready</span></article></div>
-  <div class="dashboard-grid"><article class="panel opportunity-panel"><div class="panel-heading"><div><small>ATLAS OPPORTUNITY RADAR</small><h2>Prioritized savings</h2></div><button class="text-button" data-action="review">Review all</button></div>${opportunities.map(o => `<div class="opportunity"><span class="priority ${o.priority.toLowerCase()}">${o.priority}</span><div><strong>${o.title}</strong><p>${o.detail}</p></div><b>${money.format(o.impact)}/yr</b></div>`).join('')}</article>
-  <article class="panel readiness"><small>SPRINT 10 READINESS</small><h2>Commercial foundation</h2><div class="ring"><strong>82%</strong><span>ready</span></div><ul><li class="done">Authentication foundation</li><li class="done">Company workspaces</li><li class="done">Roles and permissions</li><li>Live Supabase configuration</li></ul></article></div>`;
-}
-
-function companyView(company) { return `${pageHeader('COMPANY WORKSPACE','Company profile','Manage the identity and operating details for this protected workspace.')}<form class="panel form-grid" id="companyForm"><label>Company name<input value="${company.name}"></label><label>Workspace ID<input value="${company.id}" disabled></label><label>Industry<select><option>Technology</option><option>Professional Services</option><option>Construction</option><option>Retail</option></select></label><label>Fiscal year begins<select><option>January</option><option>July</option></select></label><label class="wide">Company logo<div class="upload-box">A <span>Upload logo</span></div></label><button class="primary-button fit" type="submit">Save company</button></form>`; }
-
-function team() { const members=[['Brian Hess','Owner','Full access'],['Morgan Lee','Admin','Manage users and accounts'],['Jordan Kim','Accountant','Reports and exports'],['Taylor Reed','Employee','Dashboard view']]; return `${pageHeader('ACCESS CONTROL','Team and roles','Control who can enter this company workspace and what they can do.')}<div class="panel"><div class="panel-heading"><div><small>4 ACTIVE USERS</small><h2>Workspace members</h2></div><button class="primary-button fit" data-action="invite">+ Invite user</button></div><div class="member-list">${members.map(m=>`<div><span class="avatar-small">${initials(m[0])}</span><div><strong>${m[0]}</strong><small>${m[2]}</small></div><select><option selected>${m[1]}</option><option>Owner</option><option>Admin</option><option>Accountant</option><option>Employee</option></select></div>`).join('')}</div></div>`; }
-
-function notifications() { return `${pageHeader('NOTIFICATION CENTER','What needs attention','Five recent events across your SmartLedger workspace.')}<div class="panel notification-list">${[['New savings opportunity','Atlas identified overlapping software subscriptions.','2 min ago'],['Bank sync complete','All connected demo accounts are current.','18 min ago'],['Monthly report ready','Your executive financial summary is prepared.','Today'],['Team member invited','Jordan Kim received workspace access.','Yesterday'],['Security review passed','No cross-company access issues were detected.','Yesterday']].map((n,i)=>`<article><span>${i<2?'●':'○'}</span><div><strong>${n[0]}</strong><p>${n[1]}</p></div><small>${n[2]}</small></article>`).join('')}<button class="demo-button fit" data-action="read">Mark all as read</button></div>`; }
-
-function billing(company) { return `${pageHeader('SUBSCRIPTION FOUNDATION','Billing and plan','The payment connection is staged for a future Stripe integration.')}<div class="billing-grid"><article class="panel current-plan"><small>CURRENT PLAN</small><h2>${company.plan}</h2><strong>Founding customer access</strong><p>Authentication, company workspaces, team roles, reports, and priority support.</p><button class="primary-button" data-action="billing">Manage subscription</button></article><article class="panel"><small>PLANNED TIERS</small><div class="tier"><b>Starter</b><span>Core monitoring</span></div><div class="tier featured"><b>Professional</b><span>AI insights + teams</span></div><div class="tier"><b>Enterprise</b><span>Multi-company controls</span></div></article></div>`; }
-
-function settings() { return `${pageHeader('PERSONAL SETTINGS','Profile and preferences','Manage your account, password, appearance, and alerts.')}<form id="settingsForm" class="panel form-grid"><label>Full name<input value="${state.user.name}"></label><label>Email<input type="email" value="${state.user.email}"></label><label>Role<input value="${state.user.role}" disabled></label><label>Theme<select><option>Atlas Dark</option><option>System default</option></select></label><label class="toggle-row wide"><span><strong>Opportunity alerts</strong><small>Notify me when Atlas finds new savings.</small></span><input type="checkbox" checked></label><label class="toggle-row wide"><span><strong>Monthly reports</strong><small>Prepare an executive summary each month.</small></span><input type="checkbox" checked></label><button class="primary-button fit" type="submit">Save settings</button></form>`; }
-
-function bindViewActions() {
-  document.querySelector('#companyForm')?.addEventListener('submit', e => { e.preventDefault(); toast('Company settings saved.'); });
-  document.querySelector('#settingsForm')?.addEventListener('submit', e => { e.preventDefault(); toast('Profile settings saved.'); });
-  document.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', () => {
-    const messages = { review:'Opportunity report opened.', invite:'Invitation workflow is ready for backend connection.', read:'All notifications marked as read.', billing:'Billing portal placeholder opened.' };
-    if (btn.dataset.action === 'read') { state.notifications = 0; }
-    toast(messages[btn.dataset.action] || 'Action complete.');
-  }));
-}
-
-if (state.user) renderApp(); else authScreen();
+state.user?renderApp():authScreen();
