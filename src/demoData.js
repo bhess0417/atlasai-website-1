@@ -41,7 +41,7 @@ const vendors = [
   ['Adobe','Software'],['Travelers Insurance','Insurance'],['Gusto Payroll','Payroll'],['Shell Fleet','Fuel']
 ];
 
-export function createDemoTransactions(count=240){
+export function createDemoTransactions(count=9842){
   const rows=[];
   const start=new Date('2026-01-01T12:00:00');
   for(let i=0;i<count;i++){
