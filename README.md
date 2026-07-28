@@ -45,3 +45,7 @@ This sprint processes and stores demo data in the browser. Production persistenc
 - Added working expandable CEO report.
 - Added Escape-key close behavior and visible keyboard focus.
 - Increased navigation click targets for accessibility.
+
+
+## Release 14.2
+Executive Workspace Polish balances the dashboard and Atlas assistant in a side-by-side desktop layout.
