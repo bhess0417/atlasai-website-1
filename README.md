@@ -47,5 +47,5 @@ This sprint processes and stores demo data in the browser. Production persistenc
 - Increased navigation click targets for accessibility.
 
 
-## Release 14.2
+## Release 16
 Executive Workspace Polish balances the dashboard and Atlas assistant in a side-by-side desktop layout.

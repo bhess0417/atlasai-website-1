@@ -111,3 +111,24 @@
 @media(max-width:1180px){.morning-brief-v3{grid-template-columns:1fr}.morning-message{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}.morning-summary{grid-template-columns:90px 145px minmax(180px,1fr) auto}.workspace-layout-v2{grid-template-columns:minmax(0,1fr) 325px}}
 @media(max-width:980px){.workspace-title-v3>div{align-items:flex-start;flex-direction:column;gap:3px}.morning-summary{grid-template-columns:1fr 1fr}.morning-summary>div{border-bottom:1px solid rgba(255,255,255,.07)}.compact-report-button{margin:12px}.workspace-layout-v2{grid-template-columns:1fr}.atlas-command{position:relative;top:auto;max-height:none;order:-1}}
 @media(max-width:680px){.workspace-title-v3{align-items:flex-start;flex-direction:column}.workspace-title-v3>div>span:last-child{white-space:normal}.morning-summary{grid-template-columns:1fr}.morning-message h1{font-size:27px}.compact-report-button{width:calc(100% - 24px)}}
+\n\n/* Release 16 — aligned dashboard column with persistent Atlas */
+.release16-layout{grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}
+.release16-layout .workspace-main{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
+.release16-layout .workspace-main>.morning-brief-v3,
+.release16-layout .workspace-main>.metric-ribbon,
+.release16-layout .workspace-main>.panel{width:100%;margin-left:0;margin-right:0}
+.release16-layout .morning-brief-v3{grid-template-columns:minmax(280px,.8fr) minmax(480px,1.45fr);margin:0}
+.release16-layout .atlas-command{position:sticky;top:92px;align-self:start;width:100%;max-height:calc(100vh - 110px);z-index:5}
+.release16-layout .atlas-command .chat-messages{flex:1;min-height:220px;max-height:none}
+.release16-layout .atlas-chat-form{margin-top:auto}
+.workspace-title-v3{max-width:100%;}
+@media(max-width:1220px){
+  .release16-layout{grid-template-columns:minmax(0,1fr) 350px}
+  .release16-layout .morning-brief-v3{grid-template-columns:1fr}
+  .release16-layout .morning-message{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}
+}
+@media(max-width:980px){
+  .release16-layout{grid-template-columns:1fr}
+  .release16-layout .atlas-command{position:relative;top:auto;max-height:none;order:2}
+  .release16-layout .workspace-main{order:1}
+}
