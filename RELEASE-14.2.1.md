@@ -1,10 +1,14 @@
-# Release 14.2.1 — Executive Workspace Layout Rewrite
-
-This release rewrites the live dashboard structure rather than applying cosmetic overrides.
-
-- Compact overnight brief
-- Dashboard metrics visible immediately
-- Atlas persistent on the right on desktop
-- Shorter conversation area
-- Ranked action center
-- Business pulse and focused Industry Watch
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SmartLedger by Atlas AI — secure financial intelligence workspace." />
+  <meta name="theme-color" content="#07111d" />
+  <title>SmartLedger | Atlas AI</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

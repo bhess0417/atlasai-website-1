@@ -1,19 +1,45 @@
-# SmartLedger Build 12.1 — Atlas Intelligence
+import { ArrowUpRight, Clock3, Gauge, PiggyBank } from "lucide-react";
 
-## Added
-- Daily Atlas Executive Brief generated from imported transaction data
-- Financial health, potential annual savings, and cash-flow status summary
-- Ranked top-three financial priorities
-- Next-best-action recommendation
-- Explain Why dialogs with supporting evidence and confidence scores
-- Data-aware recommendations for duplicate payments, subscriptions, processing fees, and fuel spending
+export default function OpportunityList({ opportunities }) {
+  return (
+    <section className="panel">
+      <div className="panel-heading">
+        <div>
+          <p className="eyebrow">RECOMMENDED ACTIONS</p>
+          <h2>Opportunity Center</h2>
+        </div>
+        <button className="text-button">View all</button>
+      </div>
 
-## Important
-This is Atlas Intelligence Phase 1. It is a deterministic financial analysis engine running on the transactions available in the browser. It does not yet send data to an external large-language model. Build 12.2 will add the conversational Ask Atlas experience.
-
-## Test
-1. Enter the demo.
-2. Open Dashboard.
-3. Review the Atlas Executive Brief.
-4. Click Explain recommendation and each Explain why link.
-5. Import the sample CSV and return to Dashboard. The brief should update from the imported transactions.
+      <div className="opportunity-list">
+        {opportunities.map((item) => (
+          <article className="opportunity-card" key={item.id}>
+            <div className="opportunity-main">
+              <div className="priority-marker" />
+              <div>
+                <div className="opportunity-title-row">
+                  <h3>{item.title}</h3>
+                  <span className={`priority-pill ${item.priority.toLowerCase()}`}>{item.priority}</span>
+                </div>
+                <p>{item.description}</p>
+                <div className="opportunity-meta">
+                  <span><Gauge size={15} /> {item.confidence}% confidence</span>
+                  <span><Clock3 size={15} /> {item.time}</span>
+                  <span>{item.effort} effort</span>
+                </div>
+              </div>
+            </div>
+            <div className="opportunity-value">
+              <PiggyBank size={18} />
+              <span>Potential savings</span>
+              <strong>${item.annualSavings.toLocaleString("en-US")}/yr</strong>
+              <button className="icon-button" aria-label={`Open ${item.title}`}>
+                <ArrowUpRight size={18} />
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}

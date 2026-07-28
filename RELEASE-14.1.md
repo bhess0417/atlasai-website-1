@@ -1,8 +1,5 @@
-# Release 14.1 — Living Demo
+# Build 14 — Executive Morning Demo Experience
 
-- Atlas Manufacturing Group loads automatically when the demo workspace is selected.
-- 9,842 realistic transactions are stored separately from customer data.
-- Demo import history, revenue, vendor counts, recommendations, and CEO report are populated.
-- Workspace switching turns Demo Mode on and off intentionally.
-- Reload Demo Data restores the showcase in one click.
-- Presentation Mode and Ask Atlas remain available alongside the dashboard.
+Adds Atlas Manufacturing Group demo mode, Overnight Executive Brief, persistent Ask Atlas, CEO priorities, focused Industry Watch, and Presentation Mode.
+
+Industry Watch uses clearly labeled fictional demo intelligence in this build. Production news scanning will require current cited sources and customer-specific relevance filtering.
