@@ -76,7 +76,17 @@ export function buildExecutiveBrief(transactions = [], imports = []) {
     });
   }
 
-  priorities.sort((a, b) => b.impact - a.impact);
+  priorities.forEach((item) => {
+    const impactScore = Math.min(40, Math.round(item.impact / 500));
+    const confidenceScore = Math.round(item.confidence * 0.35);
+    item.decisionScore = Math.min(99, impactScore + confidenceScore + 20);
+    item.ease = item.id === 'duplicates' || item.id === 'subscriptions' ? 'High' : 'Medium';
+    item.timeToValue = item.id === 'duplicates' ? '1–7 days' : item.id === 'subscriptions' ? '7–14 days' : '30–90 days';
+    item.evidenceCount = item.id === 'duplicates' ? possibleDuplicates.length : item.id === 'subscriptions' ? subscriptionSpend.length : expenses.length;
+    item.nextStep = item.id === 'duplicates' ? 'Confirm the duplicate charges and request a credit.' : item.id === 'subscriptions' ? 'Confirm ownership and remove inactive licenses before renewal.' : 'Collect the latest contract and request a competitive review.';
+    item.evidence = [item.why, `${item.evidenceCount} supporting record${item.evidenceCount === 1 ? '' : 's'} reviewed`, `Estimated annual impact: ${currency.format(item.impact)}`];
+  });
+  priorities.sort((a, b) => (b.decisionScore || 0) - (a.decisionScore || 0));
   const topPriorities = priorities.slice(0, 3);
   const healthScore = Math.max(68, Math.min(94, 86 - possibleDuplicates.length * 2 + Math.min(imports.length, 4)));
 
