@@ -1,4 +1,4 @@
-# Atlas 19 — Final Executive Layout
+# Atlas 19 — Atlas Follows the CEO
 
 This build locks the dashboard layout:
 
@@ -17,3 +17,10 @@ This build locks the dashboard layout:
 
 Build command: `npm run build`  
 Output directory: `dist`
+
+
+## Correction in this build
+
+The Ask Atlas panel now has a full-height right-side track. As the CEO scrolls through
+the aligned left-side dashboard, Atlas remains visible and follows the viewport beside
+the current section instead of being trapped at its original page position.

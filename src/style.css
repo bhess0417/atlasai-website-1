@@ -50,7 +50,7 @@ button { cursor: pointer; }
 .page-heading > div { display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
 .page-heading h1 { margin:0; font-family:Georgia,serif; font-size:27px; }
 .page-heading small { color:#6f8eb5; }
-.dashboard-grid { display:grid; grid-template-columns:minmax(0, 1fr) 376px; gap:14px; align-items:start; }
+.dashboard-grid { display:grid; grid-template-columns:minmax(0, 1fr) 376px; gap:14px; align-items:stretch; }
 .content-column { display:grid; gap:14px; min-width:0; }
 .panel { width:100%; border:1px solid #263d54; background:linear-gradient(180deg,#0a1d2f,#081726); border-radius:20px; overflow:hidden; }
 .executive-brief { min-height:172px; display:grid; grid-template-columns:2.45fr .8fr 1.35fr 1.65fr .85fr; align-items:stretch; }
@@ -97,7 +97,7 @@ button { cursor: pointer; }
 .evidence-grid strong,.evidence-grid span { display:block; }
 .evidence-grid strong { font-size:24px; color:#e9c65f; }
 .evidence-grid span { margin-top:5px; color:#8fa2b8; font-size:12px; }
-.atlas-column { position:relative; }
+.atlas-column { position:relative; align-self:stretch; min-height:100%; }
 .atlas-panel { position:sticky; top:108px; height:calc(100vh - 125px); min-height:560px; border:1px solid #2b4b62; background:linear-gradient(180deg,#0d2638,#071827); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; }
 .atlas-panel header { display:flex; justify-content:space-between; gap:14px; padding:16px; border-bottom:1px solid #20384d; }
 .atlas-title { display:flex; gap:12px; }
@@ -159,4 +159,14 @@ button { cursor: pointer; }
   .kpi-grid,.opportunity-grid,.evidence-grid { grid-template-columns:1fr; }
   .opp-content { grid-template-columns:34px minmax(0,1fr); }
   .text-button { grid-column:2; justify-self:start; padding:8px 0 0; }
+}
+
+
+/* Atlas 19 follow-the-CEO correction:
+   The right grid column now stretches to the full height of the dashboard,
+   giving the sticky Atlas panel room to travel with the viewport. */
+@media (min-width: 1051px) {
+  .dashboard-grid { align-items: stretch; }
+  .atlas-column { align-self: stretch; height: auto; }
+  .atlas-panel { position: sticky; top: 108px; }
 }
