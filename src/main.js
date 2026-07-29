@@ -190,7 +190,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="dashboard-grid">
           <div class="content-column">
-            <section class="panel executive-brief">
+            <section id="dashboard-section" class="panel executive-brief">
               <div class="brief-message">
                 <span class="eyebrow">OVERNIGHT BRIEF · 4:17 AM</span>
                 <h2>Good morning,<br>Brian.</h2>
@@ -199,17 +199,17 @@ document.querySelector('#app').innerHTML = `
               <div class="brief-stat"><span>HEALTH</span><strong class="green">92</strong><small>Healthy</small></div>
               <div class="brief-stat"><span>SAVINGS</span><strong>$46,100.00</strong><small>Annual opportunity</small></div>
               <div class="brief-priority"><span>TOP PRIORITY</span><strong>Review commercial insurance</strong><button data-open-investigation="insurance">Explain →</button></div>
-              <button class="gold-button full-report">Full CEO report</button>
+              <button id="fullReportButton" class="gold-button full-report">Full CEO report</button>
             </section>
 
-            <section class="kpi-grid">
+            <section id="financial-imports-section" class="kpi-grid">
               <article class="panel kpi"><span>ANNUAL REVENUE</span><strong>$28,400,000.00</strong><small class="green">Healthy operating trend</small></article>
               <article class="panel kpi"><span>CASH ON HAND</span><strong>$2.84M</strong><small class="green">Low 90-day risk</small></article>
               <article class="panel kpi"><span>ACTIVE VENDORS</span><strong>412</strong><small class="green">Across 3 locations</small></article>
               <article class="panel kpi"><span>SAVINGS IDENTIFIED</span><strong>$46,100.00</strong><small class="green">4 ranked opportunities</small></article>
             </section>
 
-            <section class="panel confidence-panel">
+            <section id="transactions-section" class="panel confidence-panel">
               <div class="section-title">
                 <div><span>ANALYSIS CONFIDENCE</span><h3>Atlas has enough evidence to act</h3></div>
                 <span class="confidence-badge">94% OVERALL</span>
@@ -222,7 +222,7 @@ document.querySelector('#app').innerHTML = `
               </div>
             </section>
 
-            <section class="panel action-center">
+            <section id="import-history-section" class="panel action-center">
               <div class="section-title">
                 <div><span>TODAY'S ACTION CENTER</span><h3>Decisions with the greatest financial impact</h3></div>
                 <span class="ranked-pill">RANKED BY ATLAS</span>
@@ -245,7 +245,7 @@ document.querySelector('#app').innerHTML = `
               </div>
             </section>
 
-            <section class="panel trends-panel">
+            <section id="settings-section" class="panel trends-panel">
               <div class="section-title">
                 <div><span>FINANCIAL TREND</span><h3>Monthly operating performance</h3></div>
                 <button class="outline-button small">Last 6 months</button>
@@ -276,6 +276,20 @@ document.querySelector('#app').innerHTML = `
     </div>
   </div>
 
+
+  <div id="reportModal" class="reportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:#0d2235;color:white;padding:24px;border-radius:16px;max-width:700px;width:90%">
+      <h2>CEO Executive Report</h2>
+      <p><strong>Business Health:</strong> 92</p>
+      <p><strong>Revenue:</strong> $28.4M</p>
+      <p><strong>Cash:</strong> $2.84M</p>
+      <p><strong>Savings Identified:</strong> $46,100</p>
+      <h3>Top Priority</h3>
+      <p>Review commercial insurance before renewal.</p>
+      <button id="investigateTop">Investigate Top Priority</button>
+      <button id="closeReport">Close</button>
+    </div>
+  </div>
   <div id="toast" class="toast"></div>
 `;
 
@@ -504,10 +518,16 @@ document.querySelectorAll('[data-open-investigation]').forEach(button => {
   });
 });
 
-document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  showToast(`${btn.dataset.section} selected`);
+const sectionMap={'Dashboard':'dashboard-section','Financial Imports':'financial-imports-section','Transactions':'transactions-section','Import History':'import-history-section','Settings':'settings-section'};
+document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
+ const el=document.getElementById(sectionMap[btn.dataset.section]); if(el) el.scrollIntoView({behavior:'smooth'});
 }));
-
+const rpt=document.getElementById('reportModal');
+document.getElementById('fullReportButton').addEventListener('click',()=>{rpt.style.display='flex';});
+document.getElementById('closeReport').addEventListener('click',()=>rpt.style.display='none');
+rpt.addEventListener('click',e=>{if(e.target===rpt) rpt.style.display='none';});
+document.getElementById('investigateTop').addEventListener('click',()=>{rpt.style.display='none'; const o=opportunities.find(x=>x.id==='insurance'); if(o) renderInvestigation(o);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape') rpt.style.display='none';});
 renderChat();
