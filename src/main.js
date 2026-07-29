@@ -1,1048 +1,171 @@
-
 import './style.css';
 
-const money = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0
-});
+const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-const opportunities = [
-  {
-    id: 'insurance',
-    rank: 1,
-    title: 'Review commercial insurance',
-    impact: 18300,
-    score: 96,
-    confidence: 96,
-    window: '20–60 days',
-    status: 'Investigation ready',
-    summary: 'Commercial insurance costs are 18% above the peer benchmark.',
-    reasoning: [
-      'Premiums are 18% above comparable manufacturers with similar revenue and headcount.',
-      'No competitive rebid has occurred in 31 months.',
-      'Two policy riders appear to overlap with existing coverage.'
-    ],
-    evidence: [
-      ['Premium history', '36 months reviewed', 'verified'],
-      ['Policy renewal dates', 'Next renewal in 74 days', 'verified'],
-      ['Carrier comparison', '4 peer carriers matched', 'verified'],
-      ['Coverage overlap', '2 overlapping riders detected', 'attention'],
-      ['Claims history', 'Loss ratio remains favorable', 'verified'],
-      ['Industry benchmark', 'Manufacturing peer set', 'verified']
-    ],
-    action: 'Request three competitive quotes before the renewal date.',
-    timeline: '21 days',
-    emailSubject: 'Request for competitive commercial insurance quotes',
-    emailBody: 'We are reviewing our commercial insurance program ahead of renewal and would like three competitive quote options with a line-by-line comparison of coverage, limits, deductibles, exclusions, and fees.'
-  },
-  {
-    id: 'processing',
-    rank: 2,
-    title: 'Renegotiate merchant processing',
-    impact: 14800,
-    score: 92,
-    confidence: 94,
-    window: '45–90 days',
-    status: 'Investigation ready',
-    summary: 'Effective processing fees increased 11% this quarter.',
-    reasoning: [
-      'The blended effective rate increased from 2.61% to 2.90%.',
-      'Two avoidable gateway fees are charged across three locations.',
-      'Current volume qualifies the company for a stronger pricing tier.'
-    ],
-    evidence: [
-      ['Processing statements', '12 months reviewed', 'verified'],
-      ['Fee schedule', '18 fee types categorized', 'verified'],
-      ['Volume tier', '$7.3M annual card volume', 'verified'],
-      ['Gateway duplication', '2 overlapping fees', 'attention'],
-      ['Chargeback history', 'Below peer median', 'verified'],
-      ['Provider benchmark', '5 processors compared', 'verified']
-    ],
-    action: 'Request interchange-plus pricing and remove duplicate gateway fees.',
-    timeline: '30 days',
-    emailSubject: 'Merchant processing pricing review',
-    emailBody: 'Please provide a revised interchange-plus proposal based on our current annual card volume, including removal of duplicate gateway fees and a full schedule of monthly and transaction-level charges.'
-  },
-  {
-    id: 'software',
-    rank: 3,
-    title: 'Consolidate overlapping software',
-    impact: 7900,
-    score: 89,
-    confidence: 91,
-    window: '10–30 days',
-    status: 'Investigation ready',
-    summary: 'Atlas found duplicate functions across six software subscriptions.',
-    reasoning: [
-      'Three collaboration tools provide substantially overlapping functionality.',
-      'Twenty-seven paid seats show no activity in the last 90 days.',
-      'Two annual renewals occur within the next 45 days.'
-    ],
-    evidence: [
-      ['Subscription ledger', '64 subscriptions reviewed', 'verified'],
-      ['Seat utilization', '27 inactive seats', 'attention'],
-      ['Feature overlap', '6 products matched', 'verified'],
-      ['Renewal calendar', '2 renewals within 45 days', 'verified'],
-      ['Department ownership', 'All owners identified', 'verified'],
-      ['Contract terms', '4 cancellation windows open', 'verified']
-    ],
-    action: 'Cancel inactive seats and consolidate collaboration tools before renewal.',
-    timeline: '14 days',
-    emailSubject: 'Software subscription consolidation review',
-    emailBody: 'We are reviewing software usage and renewals. Please confirm active users, business owner, renewal date, cancellation deadline, and required functionality for each subscription assigned to your department.'
-  },
-  {
-    id: 'freight',
-    rank: 4,
-    title: 'Rebid freight and logistics',
-    impact: 5100,
-    score: 84,
-    confidence: 88,
-    window: '30–75 days',
-    status: 'Investigation ready',
-    summary: 'Freight cost per shipment is 12% higher at the West location.',
-    reasoning: [
-      'The West location pays a higher average cost on comparable lanes.',
-      'Fuel surcharges increased without a corresponding contract review.',
-      'Shipment volume is sufficient for a regional bid.'
-    ],
-    evidence: [
-      ['Freight invoices', '1,284 shipments reviewed', 'verified'],
-      ['Lane comparison', '19 recurring lanes matched', 'verified'],
-      ['Fuel surcharge', '12-month trend analyzed', 'attention'],
-      ['Location variance', 'West location +12%', 'attention'],
-      ['Carrier concentration', '68% with one carrier', 'verified'],
-      ['Regional benchmark', '3 carrier bids modeled', 'verified']
-    ],
-    action: 'Issue a regional bid for recurring freight lanes.',
-    timeline: '35 days',
-    emailSubject: 'Request for freight lane proposal',
-    emailBody: 'We are requesting updated pricing for our recurring freight lanes. Please include base rate, fuel surcharge methodology, accessorial charges, service commitments, and volume-based discounts.'
-  }
+const priorities = [
+  { level: 'critical', title: 'Review commercial insurance', detail: 'Premiums are 18% above the peer benchmark.', savings: 18300 },
+  { level: 'high', title: 'Renegotiate merchant processing', detail: 'Effective fees increased 11% this quarter.', savings: 14800 },
+  { level: 'medium', title: 'Consolidate overlapping software', detail: '27 paid seats show no activity in 90 days.', savings: 7900 },
+  { level: 'positive', title: 'Cash flow improved', detail: '90-day liquidity risk moved from moderate to low.', savings: 0 },
+  { level: 'positive', title: 'New freight savings opportunity', detail: 'West-location freight cost is 12% above average.', savings: 5100 }
 ];
 
-let selectedOpportunity = null;
-let currentMode = 'chat';
-let activeTopic = null;
-let conversationHistory = [
-  { who: 'atlas', text: 'I am ready to help. Open any opportunity or ask about savings, risk, vendors, or cash flow.' }
+const intelligence = [
+  ['Insurance market', 'Commercial premiums are softening for low-claim manufacturers.', '6 min ago'],
+  ['Fuel costs', 'Regional diesel prices are trending 2.1% lower this month.', '18 min ago'],
+  ['Steel watch', 'Input prices rose 3.0%; review open purchase orders.', '36 min ago'],
+  ['Compliance', 'A new OSHA recordkeeping reminder is approaching.', '1 hr ago'],
+  ['Rates', 'Borrowing-cost outlook is stable for the next planning cycle.', '2 hr ago']
 ];
 
-document.querySelector('#app').innerHTML = `
-  <div id="appShell" class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">A</div>
-        <div>
-          <strong>ATLAS AI</strong>
-          <span>SMARTLEDGER</span>
-        </div>
+const app = document.querySelector('#app');
+app.innerHTML = `
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div>
+    <nav class="sidebar-nav">
+      ${['Dashboard','Financial Imports','Transactions','Import History','Settings'].map((x,i)=>`<button class="nav-item ${i===0?'active':''}" data-nav="${x}"><span>${['⌂','⇧','≡','◷','⚙'][i]}</span>${x}</button>`).join('')}
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="privacy-card"><span>◇</span><div><strong>Private processing</strong><small>Files remain in your browser</small></div></div>
+      <button class="signout">↪ Sign out</button>
+    </div>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
+      <div class="top-actions">
+        <button class="outline" id="presentationBtn">Presentation mode</button>
+        <span class="release">ATLAS 20.7 · EXECUTIVE EXPERIENCE</span>
+        <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
+    </header>
 
-      <nav class="sidebar-nav" aria-label="Primary navigation">
-        ${['Dashboard','Financial Imports','Transactions','Import History','Settings'].map((item, i) => `
-          <button class="nav-item ${i === 0 ? 'active' : ''}" data-section="${item}">
-            <span class="nav-icon">${['⌂','⇧','≡','◷','⚙'][i]}</span>
-            <span>${item}</span>
-          </button>`).join('')}
-      </nav>
+    <section class="demo-strip"><div><span class="live">LIVE DEMO WORKSPACE</span><strong>Atlas Manufacturing Group</strong><span>Fictional but internally consistent data · 9,842 transactions</span></div><button class="outline" id="reloadBtn">Reload demo data</button></section>
 
-      <div class="sidebar-bottom">
-        <div class="privacy-card">
-          <span class="privacy-icon">◇</span>
-          <div><strong>Private processing</strong><small>Files remain in your browser</small></div>
-        </div>
-        <button id="signOutButton" class="signout">↪ <span>Sign out</span></button>
-      </div>
-    </aside>
-
-    <div class="workspace">
-      <header class="topbar">
+    <main class="page">
+      <section class="welcome-card">
         <div>
-          <span class="top-label">CURRENT WORKSPACE</span>
-          <button class="workspace-button">Atlas AI Demo Company⌄</button>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 20.7</span>
+          <h1>Good evening, Brian.</h1>
+          <p>Atlas analyzed 9,842 transactions and prepared your priority list for today.</p>
+          <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
         </div>
-        <div class="top-actions">
-          <button class="outline-button">Presentation mode</button>
-          <span class="release-pill">ATLAS 20.6 · FINANCIAL IMPORTS</span>
-          <div class="profile">
-            <span>BH</span>
-            <div><strong>Brian Hess</strong><small>Owner</small></div>
-          </div>
+        <div class="welcome-stats">
+          <article><span>OPPORTUNITIES</span><strong class="count" data-value="4">0</strong><small>Ready for review</small></article>
+          <article><span>ANNUAL SAVINGS</span><strong class="count money" data-value="46100">$0</strong><small>Identified by Atlas</small></article>
+          <article><span>FINANCIAL HEALTH</span><strong class="count" data-value="92">0</strong><small>Healthy</small></article>
+          <article><span>ATLAS CONFIDENCE</span><strong class="count percent" data-value="98">0%</strong><small>High confidence</small></article>
         </div>
-      </header>
-
-      <section class="demo-strip">
-        <div>
-          <span class="live-pill">LIVE DEMO WORKSPACE</span>
-          <strong>Atlas Manufacturing Group</strong>
-          <span>Fictional but internally consistent manufacturing data · 9,842 transactions</span>
-        </div>
-        <button class="outline-button">Reload demo data</button>
       </section>
 
-      <section id="importCenterView" class="import-center-view" hidden>
-        <div class="import-page-heading">
-          <div>
-            <span>FINANCIAL IMPORT CENTER · RELEASE 20.6</span>
-            <h1>Bring your financial data into Atlas</h1>
-            <p>Upload CSV statements securely in your browser. Atlas will prepare them for analysis.</p>
-          </div>
-          <button id="returnToDashboard" class="outline-button">← Return to dashboard</button>
-        </div>
-
-        <section id="importSuccessBanner" class="import-success-banner" hidden>
-          <span class="success-icon">✓</span>
-          <div><strong id="importSuccessTitle">Files imported successfully</strong><small id="importSuccessText">Atlas is ready to analyze your data.</small></div>
-        </section>
-
-        <div class="import-summary-grid">
-          <article class="panel import-summary-card"><span>FILES IMPORTED</span><strong id="filesImportedMetric">0</strong><small>Current browser session</small></article>
-          <article class="panel import-summary-card"><span>TOTAL TRANSACTIONS</span><strong id="transactionsImportedMetric">0</strong><small>Rows prepared for analysis</small></article>
-          <article class="panel import-summary-card"><span>LAST IMPORT</span><strong id="lastImportMetric">—</strong><small>Local time</small></article>
-          <article class="panel import-summary-card"><span>ANALYSIS STATUS</span><strong id="analysisStatusMetric">Waiting</strong><small id="analysisStatusDetail">Upload a CSV to begin</small></article>
-        </div>
-
-        <div class="import-layout">
-          <section class="panel import-uploader-panel">
-            <div class="section-title">
-              <div><span>UPLOAD FINANCIAL DATA</span><h3>Select the statement type</h3></div>
-              <span class="browser-private-pill">PRIVATE · IN BROWSER</span>
-            </div>
-
-            <div class="statement-type-grid">
-              <button class="statement-type active" data-import-type="Bank statement"><span class="statement-icon">🏦</span><span><strong>Bank statement</strong><small>Checking and savings transactions</small></span></button>
-              <button class="statement-type" data-import-type="Credit card"><span class="statement-icon">▣</span><span><strong>Credit card</strong><small>Company card activity and fees</small></span></button>
-              <button class="statement-type" data-import-type="Accounts payable"><span class="statement-icon">▤</span><span><strong>Accounts payable</strong><small>Vendor bills and payment exports</small></span></button>
-            </div>
-
-            <label id="dropZone" class="drop-zone" for="financialFileInput">
-              <input id="financialFileInput" type="file" accept=".csv,text/csv" multiple hidden />
-              <span class="drop-icon">⇧</span>
-              <strong>Drag and drop CSV files here</strong>
-              <span>or click to browse your computer</span>
-              <small>CSV only · Files remain in this browser session</small>
-            </label>
-
-            <div class="import-help"><strong>Recommended columns</strong><span>Date, Description, Vendor, Amount, Category, Account</span></div>
+      <section class="dashboard-grid">
+        <div class="main-column">
+          <section class="kpi-grid">
+            <article class="panel kpi"><span>ANNUAL REVENUE</span><strong class="count money" data-value="28400000">$0</strong><small>Healthy operating trend</small></article>
+            <article class="panel kpi"><span>CASH ON HAND</span><strong class="count money" data-value="2840000">$0</strong><small>Low 90-day risk</small></article>
+            <article class="panel kpi"><span>ACTIVE VENDORS</span><strong class="count" data-value="412">0</strong><small>Across 3 locations</small></article>
+            <article class="panel kpi"><span>SAVINGS IDENTIFIED</span><strong class="count money" data-value="46100">$0</strong><small>4 ranked opportunities</small></article>
           </section>
 
-          <section class="panel import-queue-panel">
-            <div class="section-title">
-              <div><span>IMPORT QUEUE</span><h3>Files ready for Atlas</h3></div>
-              <button id="clearImportQueue" class="text-button import-clear-button" disabled>Clear all</button>
+          <section class="panel action-center">
+            <div class="section-head"><div><span class="micro">CEO ACTION CENTER</span><h2>Today's executive priorities</h2></div><span class="ready-pill">RANKED BY ATLAS</span></div>
+            <div class="priority-list">
+              ${priorities.map((p,i)=>`<button class="priority-row" data-priority="${i}"><span class="priority-dot ${p.level}"></span><span class="priority-rank">${String(i+1).padStart(2,'0')}</span><span class="priority-copy"><strong>${p.title}</strong><small>${p.detail}</small></span><span class="impact">${p.savings?money.format(p.savings):'Positive trend'}</span><span class="arrow">›</span></button>`).join('')}
             </div>
+          </section>
 
-            <div id="emptyImportQueue" class="empty-import-queue">
-              <span class="empty-queue-icon">◇</span>
-              <strong>No files imported yet</strong>
-              <p>Your uploaded statements will appear here with transaction counts and validation status.</p>
-            </div>
-
-            <div id="importQueue" class="import-queue" hidden></div>
-
-            <div class="analyze-footer">
-              <div><span>ATLAS ANALYSIS</span><strong id="analysisReadyText">Waiting for financial data</strong></div>
-              <button id="analyzeImportsButton" class="gold-button" disabled>Analyze with Atlas</button>
-            </div>
+          <section class="two-col">
+            <article class="panel savings-panel">
+              <div class="section-head"><div><span class="micro">SAVINGS TIMELINE</span><h2>Value identified this year</h2></div><strong>$46,100</strong></div>
+              <div class="timeline-bars">
+                ${[['Jan',4200],['Feb',6300],['Mar',8900],['Apr',11700],['May',6800],['Jun',8200]].map(([m,v])=>`<div><span class="bar" style="--h:${Math.round(v/11700*100)}%"></span><small>${m}</small><b>${money.format(v)}</b></div>`).join('')}
+              </div>
+            </article>
+            <article class="panel intelligence-panel">
+              <div class="section-head"><div><span class="micro">ATLAS INTELLIGENCE</span><h2>External signals to watch</h2></div><span class="pulse">● LIVE</span></div>
+              <div class="feed">${intelligence.map(([t,d,time])=>`<button class="feed-item"><span class="feed-icon">✦</span><span><strong>${t}</strong><small>${d}</small></span><time>${time}</time></button>`).join('')}</div>
+            </article>
           </section>
         </div>
 
-        <section class="panel import-history-panel">
-          <div class="section-title"><div><span>SESSION IMPORT HISTORY</span><h3>Recent financial files</h3></div></div>
-          <div class="import-history-header"><span>FILE</span><span>TYPE</span><span>TRANSACTIONS</span><span>STATUS</span></div>
-          <div id="importHistoryRows" class="import-history-rows"><div class="empty-history-row">No imports in this session.</div></div>
-        </section>
+        <aside class="atlas-panel" id="atlasPanel">
+          <header><div class="atlas-title"><span class="atlas-logo">A</span><div><span>ATLAS · EXECUTIVE COPILOT</span><h2>Ask Atlas</h2><small>Continue naturally with follow-up questions.</small></div></div><span class="ready-pill green">● READY</span></header>
+          <div class="topic-row"><div><span>CURRENTLY DISCUSSING</span><strong id="topic">General business overview</strong></div><button id="newChat">New conversation</button></div>
+          <div class="chat" id="chat"><div class="message atlas"><span>A</span><p>Good evening, Brian. I have reviewed the latest demo data. Ask about savings, risk, vendors, cash flow, or today's priorities.</p></div></div>
+          <div class="typing" id="typing"><span></span><span></span><span></span><em>Atlas is analyzing…</em></div>
+          <div class="quick-prompts">
+            <button data-prompt="Explain the top priority">Explain the top priority</button>
+            <button data-prompt="Show all savings">Show all savings</button>
+            <button data-prompt="What should I do first?">What should I do first?</button>
+          </div>
+          <form id="chatForm"><input id="chatInput" placeholder="Ask Atlas a question…" autocomplete="off"><button class="gold">Send</button></form>
+        </aside>
       </section>
-
-      <main id="dashboardPage" class="page">
-        <div class="page-heading">
-          <div>
-            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.6</span>
-            <h1>Atlas Manufacturing Group</h1>
-            <small>187 employees · 3 locations · 9,842 transactions</small>
-          </div>
-          <button class="outline-button">Presentation mode</button>
-        </div>
-
-        <div class="dashboard-grid">
-          <div class="content-column">
-            <section id="dashboard-section" class="panel executive-brief">
-              <div class="brief-message">
-                <span class="eyebrow">OVERNIGHT BRIEF · 4:17 AM</span>
-                <h2>Good morning,<br>Brian.</h2>
-                <p>Atlas reviewed 9,842 transactions and found 4 items requiring attention.</p>
-              </div>
-              <div class="brief-stat"><span>HEALTH</span><strong class="green">92</strong><small>Healthy</small></div>
-              <div class="brief-stat"><span>SAVINGS</span><strong>$46,100.00</strong><small>Annual opportunity</small></div>
-              <div class="brief-priority"><span>TOP PRIORITY</span><strong>Review commercial insurance</strong><button data-open-investigation="insurance">Explain →</button></div>
-              <button id="fullReportButton" class="gold-button full-report">Full CEO report</button>
-            </section>
-
-            <section id="financial-imports-section" class="kpi-grid">
-              <article class="panel kpi"><span>ANNUAL REVENUE</span><strong>$28,400,000.00</strong><small class="green">Healthy operating trend</small></article>
-              <article class="panel kpi"><span>CASH ON HAND</span><strong>$2.84M</strong><small class="green">Low 90-day risk</small></article>
-              <article class="panel kpi"><span>ACTIVE VENDORS</span><strong>412</strong><small class="green">Across 3 locations</small></article>
-              <article class="panel kpi"><span>SAVINGS IDENTIFIED</span><strong>$46,100.00</strong><small class="green">4 ranked opportunities</small></article>
-            </section>
-
-            <section class="panel savings-proof-panel">
-              <div class="section-title">
-                <div><span>VALUE DELIVERED</span><h3>Atlas proves its financial impact</h3></div>
-                <span class="verified-pill">VERIFIED BY ATLAS</span>
-              </div>
-              <div class="savings-proof-grid">
-                <article><span>SAVINGS IDENTIFIED</span><strong>$46,100</strong><small>4 ranked opportunities</small></article>
-                <article><span>VERIFIED SAVINGS</span><strong>$18,400</strong><small>Implemented and confirmed</small></article>
-                <article><span>SAVINGS YTD</span><strong>$127,800</strong><small>January through July</small></article>
-                <article><span>ROI MULTIPLE</span><strong>12.8×</strong><small>Value versus subscription cost</small></article>
-              </div>
-            </section>
-
-            <section id="transactions-section" class="panel confidence-panel">
-              <div class="section-title">
-                <div><span>ANALYSIS CONFIDENCE</span><h3>Atlas has enough evidence to act</h3></div>
-                <span class="confidence-badge">94% OVERALL</span>
-              </div>
-              <div class="confidence-grid">
-                <article><strong>9,842</strong><span>Transactions analyzed</span><div class="meter"><i style="width:100%"></i></div></article>
-                <article><strong>412</strong><span>Vendors reviewed</span><div class="meter"><i style="width:97%"></i></div></article>
-                <article><strong>87%</strong><span>Benchmark coverage</span><div class="meter"><i style="width:87%"></i></div></article>
-                <article><strong>4:17 AM</strong><span>Last analysis completed</span><div class="meter"><i style="width:94%"></i></div></article>
-              </div>
-            </section>
-
-            <section id="import-history-section" class="panel action-center">
-              <div class="section-title">
-                <div><span>TODAY'S ACTION CENTER</span><h3>Decisions with the greatest financial impact</h3></div>
-                <span class="ranked-pill">RANKED BY ATLAS</span>
-              </div>
-              <div class="opportunity-grid">
-                ${opportunities.map(o => `
-                  <article class="opportunity-card">
-                    <div class="opp-top"><span class="ready-pill">INVESTIGATION READY</span><small>${12 + o.rank * 2} evidence points</small></div>
-                    <div class="opp-content">
-                      <span class="rank">${o.rank}</span>
-                      <div>
-                        <small>${money.format(o.impact)} ESTIMATED ANNUAL IMPACT</small>
-                        <h4>${o.title}</h4>
-                        <div class="score-row"><span>Decision Score ${o.score}</span><span>${o.confidence}% confidence</span></div>
-                        <small>${o.window}</small>
-                      </div>
-                      <button class="text-button" data-open-investigation="${o.id}">Investigate →</button>
-                    </div>
-                  </article>`).join('')}
-              </div>
-            </section>
-
-            <section id="settings-section" class="panel trends-panel">
-              <div class="section-title">
-                <div><span>FINANCIAL TREND</span><h3>Monthly operating performance</h3></div>
-                <button class="outline-button small">Last 6 months</button>
-              </div>
-              <div class="trend-chart" aria-label="Monthly operating performance chart">
-                ${[58,66,62,73,81,88].map((h,i)=>`<div><span style="height:${h}%"></span><small>${['Feb','Mar','Apr','May','Jun','Jul'][i]}</small></div>`).join('')}
-              </div>
-            </section>
-
-            <section class="panel evidence-panel">
-              <div class="section-title">
-                <div><span>EVIDENCE LIBRARY</span><h3>What Atlas reviewed</h3></div>
-              </div>
-              <div class="evidence-grid">
-                <article><strong>9,842</strong><span>Transactions analyzed</span></article>
-                <article><strong>412</strong><span>Active vendors reviewed</span></article>
-                <article><strong>24</strong><span>Contracts compared</span></article>
-                <article><strong>4</strong><span>Priority opportunities</span></article>
-              </div>
-            </section>
-          </div>
-
-          <aside class="atlas-column">
-            <section id="atlasPanel" class="atlas-panel"></section>
-          </aside>
-        </div>
-      </main>
-    </div>
+    </main>
   </div>
+</div>
 
-
-  <div id="reportModal" class="reportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center;">
-    <div style="background:#0d2235;color:white;padding:24px;border-radius:16px;max-width:700px;width:90%">
-      <h2>CEO Executive Report</h2>
-      <p><strong>Business Health:</strong> 92</p>
-      <p><strong>Revenue:</strong> $28.4M</p>
-      <p><strong>Cash:</strong> $2.84M</p>
-      <p><strong>Savings Identified:</strong> $46,100</p>
-      <h3>Top Priority</h3>
-      <p>Review commercial insurance before renewal.</p>
-      <button id="investigateTop">Investigate Top Priority</button>
-      <button id="closeReport">Close</button>
-    </div>
-  </div>
-
-  <div id="signOutModal" class="auth-modal" aria-hidden="true">
-    <div class="auth-backdrop" data-cancel-signout></div>
-    <section class="signout-dialog" role="dialog" aria-modal="true" aria-labelledby="signOutTitle">
-      <span class="atlas-logo auth-logo">A</span>
-      <span class="auth-eyebrow">ATLAS AI · SMARTLEDGER</span>
-      <h2 id="signOutTitle">Sign out?</h2>
-      <p>Are you sure you want to end your Atlas session?</p>
-      <div class="signout-actions">
-        <button id="cancelSignOut" class="outline-button">Cancel</button>
-        <button id="confirmSignOut" class="gold-button">Sign out</button>
-      </div>
-    </section>
-  </div>
-
-  <section id="welcomeScreen" class="welcome-screen" hidden>
-    <div class="welcome-card account-choice-card">
-      <div class="welcome-brand"><span class="brand-mark">A</span></div>
-      <span class="auth-eyebrow">ATLAS AI · SMARTLEDGER</span>
-      <h1>Welcome to Atlas.</h1>
-      <p>Choose how you would like to continue.</p>
-
-      <div class="account-choice-grid">
-        <button id="showSignInButton" class="account-choice primary-choice">
-          <span class="choice-icon">↳</span>
-          <span><strong>Sign in</strong><small>Access an existing Atlas account</small></span>
-        </button>
-
-        <button id="showCreateAccountButton" class="account-choice">
-          <span class="choice-icon">＋</span>
-          <span><strong>Create a new account</strong><small>Set up a new company workspace</small></span>
-        </button>
-
-        <button id="openDemoButton" class="account-choice demo-choice">
-          <span class="choice-icon">◇</span>
-          <span><strong>Open demo company</strong><small>Explore Atlas Manufacturing Group</small></span>
-        </button>
-      </div>
-
-      <div id="accountFormArea" class="account-form-area" aria-live="polite"></div>
-      <small>Atlas SmartLedger · Version 20.6</small>
-    </div>
-  </section>
-  <div id="toast" class="toast"></div>
+<div class="modal" id="modal"><div class="modal-card"><button class="modal-close" id="modalClose">×</button><span class="micro" id="modalEyebrow">EXECUTIVE BRIEF</span><h2 id="modalTitle">Atlas Executive Brief</h2><div id="modalBody"></div></div></div>
+<div class="toast" id="toast"></div>
 `;
 
-function renderChat() {
-  currentMode = 'chat';
-  const panel = document.querySelector('#atlasPanel');
-  panel.innerHTML = `
-    <header>
-      <div class="atlas-title">
-        <span class="atlas-logo">A</span>
-        <div><span>ATLAS · EXECUTIVE COPILOT</span><strong>Ask Atlas</strong><small>Ask a question, then continue naturally with follow-ups.</small></div>
-      </div>
-      <span class="ready-status">● READY</span>
-    </header>
+const replies = {
+  'Explain the top priority': 'Commercial insurance is ranked first because premiums are 18% above comparable manufacturers, no competitive rebid has occurred in 31 months, and two policy riders appear to overlap. Estimated annual savings: $18,300.',
+  'Show all savings': 'Atlas identified four savings opportunities totaling $46,100 annually: commercial insurance ($18,300), merchant processing ($14,800), software consolidation ($7,900), and freight ($5,100).',
+  'What should I do first?': 'Start with commercial insurance. The renewal window is approaching, the potential savings are highest, and the evidence confidence is 96%.'
+};
 
-    <div class="topic-bar">
-      <div><span>CURRENTLY DISCUSSING</span><strong id="activeTopicLabel">${activeTopic ? activeTopic.title : 'General business overview'}</strong></div>
-      <button id="newConversation" type="button">New conversation</button>
-    </div>
-
-    <div id="chat" class="chat">
-      ${conversationHistory.map(message => message.who === 'atlas'
-        ? `<div class="message atlas-message"><span class="avatar atlas-avatar">A</span><p>${message.text}</p></div>`
-        : `<div class="message user-message"><p>${message.text}</p><span class="avatar user-avatar">BH</span></div>`
-      ).join('')}
-    </div>
-
-    <div id="followUpActions" class="follow-up-actions"></div>
-
-    <div class="quick-actions">
-      <button data-prompt="Explain the top priority">Explain top priority</button>
-      <button data-prompt="Where can we find savings?">Find savings</button>
-      <button data-prompt="What should I watch this week?">Industry watch</button>
-    </div>
-
-    <form id="atlasForm" class="atlas-form">
-      <input id="atlasInput" placeholder="Ask Atlas a question..." autocomplete="off" />
-      <button class="gold-button" type="submit">Send →</button>
-    </form>
-    <small class="grounding">Atlas remembers this session and uses the current investigation as context.</small>
-  `;
-  bindChatEvents();
-  renderFollowUps();
-  const chat = document.querySelector('#chat');
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function renderInvestigation(opportunity) {
-  selectedOpportunity = opportunity;
-  currentMode = 'investigation';
-  const panel = document.querySelector('#atlasPanel');
-  panel.innerHTML = `
-    <header class="investigation-header">
-      <button class="back-button" id="backToAtlas">← Ask Atlas</button>
-      <span class="ready-status">● ${opportunity.status.toUpperCase()}</span>
-    </header>
-
-    <div class="investigation-scroll">
-      <div class="investigation-title">
-        <span class="atlas-logo">A</span>
-        <div>
-          <span>EXECUTIVE INVESTIGATION · PRIORITY ${opportunity.rank}</span>
-          <h2>${opportunity.title}</h2>
-          <p>${opportunity.summary}</p>
-        </div>
-      </div>
-
-      <div class="investigation-metrics">
-        <article><span>ESTIMATED ANNUAL SAVINGS</span><strong>${money.format(opportunity.impact)}</strong></article>
-        <article><span>CONFIDENCE</span><strong>${opportunity.confidence}%</strong></article>
-        <article><span>EXPECTED TIMELINE</span><strong>${opportunity.timeline}</strong></article>
-      </div>
-
-      <section class="investigation-section">
-        <div class="investigation-section-heading">
-          <div><span>EVIDENCE REVIEWED</span><h3>What Atlas used</h3></div>
-          <span class="evidence-count">${opportunity.evidence.length} SOURCES</span>
-        </div>
-        <div class="evidence-list">
-          ${opportunity.evidence.map(([name, detail, state]) => `
-            <button class="evidence-row" data-evidence="${name}: ${detail}">
-              <span class="evidence-check ${state}">${state === 'attention' ? '!' : '✓'}</span>
-              <span><strong>${name}</strong><small>${detail}</small></span>
-              <span class="chevron">›</span>
-            </button>
-          `).join('')}
-        </div>
-      </section>
-
-      <section class="investigation-section">
-        <span>ATLAS REASONING</span>
-        <h3>Why this is ranked #${opportunity.rank}</h3>
-        <ol class="reasoning-list">
-          ${opportunity.reasoning.map(item => `<li>${item}</li>`).join('')}
-        </ol>
-      </section>
-
-      <section class="recommendation-box">
-        <span>RECOMMENDED ACTION</span>
-        <h3>${opportunity.action}</h3>
-        <p>Expected implementation: <strong>${opportunity.timeline}</strong></p>
-      </section>
-
-      <div class="action-stack">
-        <button class="gold-button action-button" id="draftEmail">Draft email</button>
-        <button class="outline-button action-button" id="buildPlan">Build action plan</button>
-        <button class="outline-button action-button" id="askWhy">Ask Atlas why</button>
-        <button class="outline-button action-button muted-action" id="markComplete">Mark complete</button>
-      </div>
-
-      <div id="investigationOutput" class="investigation-output"></div>
-    </div>
-  `;
-  bindInvestigationEvents(opportunity);
-}
-
-function bindInvestigationEvents(opportunity) {
-  document.querySelector('#backToAtlas').addEventListener('click', renderChat);
-
-  document.querySelectorAll('[data-evidence]').forEach(button => {
-    button.addEventListener('click', () => {
-      const output = document.querySelector('#investigationOutput');
-      output.innerHTML = `<div class="output-card"><span>SUPPORTING EVIDENCE</span><p>${button.dataset.evidence}</p><small>Verified in the Atlas demo dataset.</small></div>`;
-      output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
-  });
-
-  document.querySelector('#draftEmail').addEventListener('click', () => {
-    const output = document.querySelector('#investigationOutput');
-    output.innerHTML = `
-      <div class="output-card">
-        <span>DRAFT EMAIL</span>
-        <label>Subject</label>
-        <input value="${opportunity.emailSubject}" />
-        <label>Message</label>
-        <textarea rows="7">${opportunity.emailBody}</textarea>
-        <button class="gold-button" id="copyDraft">Copy draft</button>
-      </div>`;
-    document.querySelector('#copyDraft').addEventListener('click', async () => {
-      const text = `Subject: ${opportunity.emailSubject}\n\n${opportunity.emailBody}`;
-      try { await navigator.clipboard.writeText(text); showToast('Draft copied'); }
-      catch { showToast('Draft ready to copy'); }
-    });
-    output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-
-  document.querySelector('#buildPlan').addEventListener('click', () => {
-    const output = document.querySelector('#investigationOutput');
-    output.innerHTML = `
-      <div class="output-card">
-        <span>ACTION PLAN</span>
-        <ol class="action-plan">
-          <li>Assign an executive owner.</li>
-          <li>Validate the highlighted evidence.</li>
-          <li>Request competitive pricing or cancellation terms.</li>
-          <li>Compare total cost, risk, and implementation effort.</li>
-          <li>Record the final decision and verified savings.</li>
-        </ol>
-      </div>`;
-    output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-
-  document.querySelector('#askWhy').addEventListener('click', () => {
-    activeTopic = opportunity;
-    selectedOpportunity = opportunity;
-    renderChat();
-    setTimeout(() => answer('Why?'), 50);
-  });
-
-  document.querySelector('#markComplete').addEventListener('click', (event) => {
-    event.currentTarget.textContent = '✓ Completed';
-    event.currentTarget.classList.add('completed-action');
-    showToast('Opportunity marked complete');
+function animateCounts(){
+  document.querySelectorAll('.count').forEach(el=>{
+    const target=Number(el.dataset.value); const start=performance.now(); const duration=900;
+    function tick(now){ const p=Math.min((now-start)/duration,1); const eased=1-Math.pow(1-p,3); const value=Math.round(target*eased);
+      if(el.classList.contains('money')) el.textContent=money.format(value);
+      else if(el.classList.contains('percent')) el.textContent=`${value}%`;
+      else el.textContent=value.toLocaleString('en-US');
+      if(p<1) requestAnimationFrame(tick);
+    } requestAnimationFrame(tick);
   });
 }
 
-function bindChatEvents() {
-  document.querySelectorAll('[data-prompt]').forEach(btn =>
-    btn.addEventListener('click', () => answer(btn.dataset.prompt))
-  );
-
-  document.querySelector('#atlasForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const input = document.querySelector('#atlasInput');
-    const value = input.value.trim();
-    if (!value) return;
-    answer(value);
-    input.value = '';
-  });
-
-  document.querySelector('#newConversation').addEventListener('click', () => {
-    selectedOpportunity = null;
-    activeTopic = null;
-    conversationHistory = [
-      { who: 'atlas', text: 'New conversation started. What would you like to review?' }
-    ];
-    renderChat();
-  });
+function addMessage(text, who='atlas'){
+  const chat=document.querySelector('#chat');
+  const div=document.createElement('div'); div.className=`message ${who}`;
+  div.innerHTML=who==='atlas'?`<span>A</span><p>${text}</p>`:`<p>${text}</p><span>BH</span>`;
+  chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
 }
-
-function renderFollowUps() {
-  const container = document.querySelector('#followUpActions');
-  if (!container) return;
-
-  const prompts = activeTopic
-    ? ['Why?', 'Show the evidence', 'Estimate the savings', 'Draft an email', 'What happens if we wait?']
-    : ['Explain the top priority', 'Show all savings', 'What should I do first?'];
-
-  container.innerHTML = prompts.map(prompt => `<button type="button" data-follow-up="${prompt}">${prompt}</button>`).join('');
-  container.querySelectorAll('[data-follow-up]').forEach(button => {
-    button.addEventListener('click', () => answer(button.dataset.followUp));
-  });
-}
-
-function addMessage(text, who = 'atlas') {
-  conversationHistory.push({ who, text });
-  const chat = document.querySelector('#chat');
-  if (!chat) return;
-  const wrapper = document.createElement('div');
-  wrapper.className = `message ${who === 'atlas' ? 'atlas-message' : 'user-message'}`;
-  wrapper.innerHTML = who === 'atlas'
-    ? `<span class="avatar atlas-avatar">A</span><p>${text}</p>`
-    : `<p>${text}</p><span class="avatar user-avatar">BH</span>`;
-  chat.appendChild(wrapper);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function detectTopic(prompt) {
-  const normalized = prompt.toLowerCase();
-  const aliases = {
-    insurance: ['insurance', 'premium', 'policy', 'broker', 'rider', 'renewal'],
-    processing: ['processing', 'merchant', 'card fee', 'gateway', 'processor'],
-    software: ['software', 'subscription', 'license', 'seat'],
-    freight: ['freight', 'shipping', 'logistics', 'carrier', 'shipment']
-  };
-
-  for (const [id, words] of Object.entries(aliases)) {
-    if (words.some(word => normalized.includes(word))) {
-      return opportunities.find(item => item.id === id) || null;
+function answer(prompt){
+  addMessage(prompt,'user'); document.querySelector('#topic').textContent=prompt;
+  const typing=document.querySelector('#typing'); typing.classList.add('show');
+  setTimeout(()=>{ typing.classList.remove('show'); let reply=replies[prompt];
+    if(!reply){ const q=prompt.toLowerCase();
+      if(q.includes('cash')) reply='Cash on hand is $2.84 million. Atlas currently rates 90-day liquidity risk as low, with improving operating cash flow.';
+      else if(q.includes('vendor')) reply='Atlas reviewed 412 active vendors. The strongest vendor-related opportunities are merchant processing and freight pricing.';
+      else reply='Based on the demo company data, the best next step is to review the ranked CEO Action Center. Commercial insurance remains the highest-impact opportunity.';
     }
-  }
-  return activeTopic;
+    addMessage(reply,'atlas');
+  },850);
 }
 
-function buildContextualResponse(prompt) {
-  const normalized = prompt.toLowerCase().trim();
-  const topic = activeTopic;
-
-  if (!topic) {
-    if (normalized.includes('top priority') || normalized.includes('first')) {
-      activeTopic = opportunities[0];
-      return `Commercial insurance is the top priority. Atlas found ${money.format(opportunities[0].impact)} in estimated annual savings with ${opportunities[0].confidence}% confidence.`;
-    }
-    if (normalized.includes('saving')) {
-      return 'Atlas identified four opportunities totaling $46,100 annually: commercial insurance, merchant processing, overlapping software, and freight contracts.';
-    }
-    if (normalized.includes('watch') || normalized.includes('risk')) {
-      return 'Watch the insurance renewal window, merchant-processing fee growth, and the 12% freight-cost variance at the West location.';
-    }
-    return 'The strongest next action is to investigate commercial insurance first. You can ask why, request the evidence, estimate the savings, or ask me to draft an email.';
-  }
-
-  if (normalized === 'why?' || normalized.includes('why') || normalized.includes('explain')) {
-    return `${topic.title} is ranked #${topic.rank} because ${topic.reasoning.join(' ')}`;
-  }
-  if (normalized.includes('evidence') || normalized.includes('show me')) {
-    return `The evidence includes ${topic.evidence.map(([name, detail]) => `${name}: ${detail}`).join('; ')}.`;
-  }
-  if (normalized.includes('estimate') || normalized.includes('how much') || normalized.includes('saving')) {
-    return `The estimated annual savings are ${money.format(topic.impact)}. Atlas confidence is ${topic.confidence}%, with an expected implementation timeline of ${topic.timeline}.`;
-  }
-  if (normalized.includes('draft') || normalized.includes('email')) {
-    return `Subject: ${topic.emailSubject}\n\n${topic.emailBody}`;
-  }
-  if (normalized.includes('wait') || normalized.includes('risk') || normalized.includes('delay')) {
-    return `Waiting could reduce negotiating leverage and delay realizing approximately ${money.format(topic.impact)} in annual savings. The recommended implementation window is ${topic.timeline}.`;
-  }
-  if (normalized.includes('what should') || normalized.includes('next') || normalized.includes('do')) {
-    return `${topic.action} Expected implementation: ${topic.timeline}.`;
-  }
-  if (normalized.includes('which rider') && topic.id === 'insurance') {
-    return 'The two overlapping areas are Employment Practices Liability and Cyber Incident Response. Atlas recommends confirming whether those protections already exist elsewhere before renewal.';
-  }
-
-  return `We are still discussing ${topic.title}. ${topic.summary} You can ask why, request evidence, estimate savings, draft an email, or ask about the risk of waiting.`;
+function openModal(title, body, eyebrow='EXECUTIVE BRIEF'){
+  document.querySelector('#modalEyebrow').textContent=eyebrow;
+  document.querySelector('#modalTitle').textContent=title;
+  document.querySelector('#modalBody').innerHTML=body;
+  document.querySelector('#modal').classList.add('open');
 }
+function toast(msg){ const t=document.querySelector('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
 
-function answer(prompt) {
-  addMessage(prompt, 'user');
+animateCounts();
 
-  const detectedTopic = detectTopic(prompt);
-  if (detectedTopic) {
-    activeTopic = detectedTopic;
-    selectedOpportunity = detectedTopic;
-    const label = document.querySelector('#activeTopicLabel');
-    if (label) label.textContent = activeTopic.title;
-  }
-
-  setTimeout(() => {
-    const response = buildContextualResponse(prompt);
-    addMessage(response, 'atlas');
-    renderFollowUps();
-  }, 250);
-}
-
-function showToast(message) {
-  const toast = document.querySelector('#toast');
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 1600);
-}
-
-document.querySelectorAll('[data-open-investigation]').forEach(button => {
-  button.addEventListener('click', () => {
-    const opportunity = opportunities.find(item => item.id === button.dataset.openInvestigation);
-    if (opportunity) { activeTopic = opportunity; selectedOpportunity = opportunity; renderInvestigation(opportunity); }
-  });
-});
-
-
-const dashboardPage = document.getElementById('dashboardPage');
-const importCenterView = document.getElementById('importCenterView');
-const financialFileInput = document.getElementById('financialFileInput');
-const dropZone = document.getElementById('dropZone');
-const importQueue = document.getElementById('importQueue');
-const emptyImportQueue = document.getElementById('emptyImportQueue');
-const importHistoryRows = document.getElementById('importHistoryRows');
-const analyzeImportsButton = document.getElementById('analyzeImportsButton');
-const clearImportQueue = document.getElementById('clearImportQueue');
-let selectedImportType = 'Bank statement';
-let importedFiles = [];
-
-function showDashboardView() {
-  importCenterView.hidden = true;
-  dashboardPage.hidden = false;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function showImportCenter() {
-  dashboardPage.hidden = true;
-  importCenterView.hidden = false;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function countCsvTransactions(text) {
-  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
-  if (!normalized) return 0;
-  return Math.max(0, normalized.split('\n').filter(line => line.trim()).length - 1);
-}
-
-function formatImportTime() {
-  return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
-
-function updateImportMetrics() {
-  const total = importedFiles.reduce((sum, file) => sum + file.transactions, 0);
-  document.getElementById('filesImportedMetric').textContent = importedFiles.length.toLocaleString('en-US');
-  document.getElementById('transactionsImportedMetric').textContent = total.toLocaleString('en-US');
-  document.getElementById('lastImportMetric').textContent = importedFiles.length ? importedFiles[importedFiles.length - 1].time : '—';
-  document.getElementById('analysisStatusMetric').textContent = importedFiles.length ? 'Ready' : 'Waiting';
-  document.getElementById('analysisStatusDetail').textContent = importedFiles.length ? 'Files validated for analysis' : 'Upload a CSV to begin';
-  document.getElementById('analysisReadyText').textContent = importedFiles.length ? `${total.toLocaleString('en-US')} transactions ready` : 'Waiting for financial data';
-  analyzeImportsButton.disabled = importedFiles.length === 0;
-  clearImportQueue.disabled = importedFiles.length === 0;
-}
-
-function renderImportQueue() {
-  emptyImportQueue.hidden = importedFiles.length > 0;
-  importQueue.hidden = importedFiles.length === 0;
-
-  importQueue.innerHTML = importedFiles.map((file, index) => `
-    <article class="import-file-row">
-      <span class="file-type-icon">${file.type === 'Bank statement' ? '🏦' : file.type === 'Credit card' ? '▣' : '▤'}</span>
-      <div class="import-file-name"><strong>${file.name}</strong><small>${file.size} · ${file.time}</small></div>
-      <div class="import-file-count"><strong>${file.transactions.toLocaleString('en-US')}</strong><small>transactions</small></div>
-      <span class="import-ready-status">✓ READY</span>
-      <button class="remove-import" data-remove-import="${index}" aria-label="Remove ${file.name}">×</button>
-    </article>
-  `).join('');
-
-  importHistoryRows.innerHTML = importedFiles.length
-    ? importedFiles.slice().reverse().map(file => `
-      <div class="import-history-row">
-        <span><strong>${file.name}</strong><small>${file.size}</small></span>
-        <span>${file.type}</span>
-        <span>${file.transactions.toLocaleString('en-US')}</span>
-        <span class="history-ready">Ready</span>
-      </div>
-    `).join('')
-    : '<div class="empty-history-row">No imports in this session.</div>';
-
-  document.querySelectorAll('[data-remove-import]').forEach(button => {
-    button.addEventListener('click', () => {
-      importedFiles.splice(Number(button.dataset.removeImport), 1);
-      renderImportQueue();
-      updateImportMetrics();
-    });
-  });
-}
-
-async function importFinancialFiles(fileList) {
-  const files = Array.from(fileList).filter(file => file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv');
-  if (!files.length) {
-    showToast('Please select a CSV file');
-    return;
-  }
-
-  for (const file of files) {
-    try {
-      const text = await file.text();
-      importedFiles.push({
-        name: file.name,
-        type: selectedImportType,
-        transactions: countCsvTransactions(text),
-        size: file.size < 1024 ? `${file.size} B` : `${(file.size / 1024).toFixed(1)} KB`,
-        time: formatImportTime()
-      });
-    } catch {
-      showToast(`Could not read ${file.name}`);
-    }
-  }
-
-  renderImportQueue();
-  updateImportMetrics();
-
-  const total = importedFiles.reduce((sum, file) => sum + file.transactions, 0);
-  const banner = document.getElementById('importSuccessBanner');
-  document.getElementById('importSuccessTitle').textContent = `${importedFiles.length} ${importedFiles.length === 1 ? 'file' : 'files'} imported successfully`;
-  document.getElementById('importSuccessText').textContent = `Atlas prepared ${total.toLocaleString('en-US')} transactions for analysis.`;
-  banner.hidden = false;
-  setTimeout(() => { banner.hidden = true; }, 5000);
-}
-
-document.querySelectorAll('[data-import-type]').forEach(button => {
-  button.addEventListener('click', () => {
-    document.querySelectorAll('[data-import-type]').forEach(item => item.classList.remove('active'));
-    button.classList.add('active');
-    selectedImportType = button.dataset.importType;
-  });
-});
-
-financialFileInput.addEventListener('change', event => {
-  importFinancialFiles(event.target.files);
-  financialFileInput.value = '';
-});
-
-['dragenter', 'dragover'].forEach(name => dropZone.addEventListener(name, event => {
-  event.preventDefault();
-  dropZone.classList.add('drag-active');
-}));
-
-['dragleave', 'drop'].forEach(name => dropZone.addEventListener(name, event => {
-  event.preventDefault();
-  dropZone.classList.remove('drag-active');
-}));
-
-dropZone.addEventListener('drop', event => importFinancialFiles(event.dataTransfer.files));
-
-clearImportQueue.addEventListener('click', () => {
-  importedFiles = [];
-  renderImportQueue();
-  updateImportMetrics();
-  showToast('Import queue cleared');
-});
-
-analyzeImportsButton.addEventListener('click', () => {
-  if (!importedFiles.length) return;
-  analyzeImportsButton.disabled = true;
-  analyzeImportsButton.textContent = 'Analyzing…';
-  document.getElementById('analysisStatusMetric').textContent = 'Analyzing';
-  document.getElementById('analysisStatusDetail').textContent = 'Atlas is preparing your files';
-
-  setTimeout(() => {
-    analyzeImportsButton.textContent = 'Analysis ready ✓';
-    document.getElementById('analysisStatusMetric').textContent = 'Complete';
-    document.getElementById('analysisStatusDetail').textContent = 'Ready for Atlas questions';
-    document.getElementById('analysisReadyText').textContent = 'Analysis complete';
-    showToast('Atlas analysis is ready');
-  }, 1200);
-});
-
-document.getElementById('returnToDashboard').addEventListener('click', () => {
-  showDashboardView();
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-  document.querySelector('[data-section="Dashboard"]').classList.add('active');
-});
-
-const sectionMap={'Dashboard':'dashboard-section','Financial Imports':'financial-imports-section','Transactions':'transactions-section','Import History':'import-history-section','Settings':'settings-section'};
-document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-
-  if (btn.dataset.section === 'Financial Imports') {
-    showImportCenter();
-    return;
-  }
-
-  showDashboardView();
-  const el = document.getElementById(sectionMap[btn.dataset.section]);
-  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
-}));
-const rpt=document.getElementById('reportModal');
-document.getElementById('fullReportButton').addEventListener('click',()=>{rpt.style.display='flex';});
-document.getElementById('closeReport').addEventListener('click',()=>rpt.style.display='none');
-rpt.addEventListener('click',e=>{if(e.target===rpt) rpt.style.display='none';});
-document.getElementById('investigateTop').addEventListener('click',()=>{rpt.style.display='none'; const o=opportunities.find(x=>x.id==='insurance'); if(o) renderInvestigation(o);});
-document.addEventListener('keydown',e=>{if(e.key==='Escape') rpt.style.display='none';});
-renderChat();
-
-
-const signOutModal = document.getElementById('signOutModal');
-const appShell = document.getElementById('appShell');
-const welcomeScreen = document.getElementById('welcomeScreen');
-
-function openSignOutDialog() {
-  signOutModal.classList.add('open');
-  signOutModal.setAttribute('aria-hidden', 'false');
-}
-
-function closeSignOutDialog() {
-  signOutModal.classList.remove('open');
-  signOutModal.setAttribute('aria-hidden', 'true');
-}
-
-function showWelcomeScreen() {
-  appShell.hidden = true;
-  welcomeScreen.hidden = false;
-  document.body.classList.add('signed-out');
-  window.scrollTo({ top: 0 });
-}
-
-function restoreAtlas(mode) {
-  sessionStorage.setItem('atlasSessionMode', mode);
-  localStorage.removeItem('atlasSignedOut');
-  welcomeScreen.hidden = true;
-  appShell.hidden = false;
-  document.body.classList.remove('signed-out');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  showToast(mode === 'demo' ? 'Demo company opened' : 'Welcome to Atlas');
-}
-
-function signOut() {
-  closeSignOutDialog();
-  sessionStorage.removeItem('atlasSessionMode');
-  localStorage.setItem('atlasSignedOut', 'true');
-  document.getElementById('accountFormArea').innerHTML = '';
-  showWelcomeScreen();
-}
-
-function renderSignInForm() {
-  const area = document.getElementById('accountFormArea');
-  area.innerHTML = `
-    <form id="signInForm" class="account-form">
-      <div class="form-heading">
-        <span>SIGN IN</span>
-        <button type="button" class="form-close" data-close-account-form>×</button>
-      </div>
-      <label for="signInEmail">Email address</label>
-      <input id="signInEmail" type="email" placeholder="you@company.com" required />
-      <label for="signInPassword">Password</label>
-      <input id="signInPassword" type="password" placeholder="Enter your password" required />
-      <button class="gold-button account-submit" type="submit">Sign in</button>
-      <small>Demo authentication for this release. Production accounts will use secure identity verification.</small>
-    </form>
-  `;
-
-  area.querySelector('[data-close-account-form]').addEventListener('click', () => {
-    area.innerHTML = '';
-  });
-
-  area.querySelector('#signInForm').addEventListener('submit', event => {
-    event.preventDefault();
-    restoreAtlas('account');
-  });
-}
-
-function renderCreateAccountForm() {
-  const area = document.getElementById('accountFormArea');
-  area.innerHTML = `
-    <form id="createAccountForm" class="account-form">
-      <div class="form-heading">
-        <span>CREATE ACCOUNT</span>
-        <button type="button" class="form-close" data-close-account-form>×</button>
-      </div>
-      <label for="newAccountName">Full name</label>
-      <input id="newAccountName" type="text" placeholder="Your name" required />
-      <label for="newCompanyName">Company name</label>
-      <input id="newCompanyName" type="text" placeholder="Company name" required />
-      <label for="newAccountEmail">Email address</label>
-      <input id="newAccountEmail" type="email" placeholder="you@company.com" required />
-      <label for="newAccountPassword">Create password</label>
-      <input id="newAccountPassword" type="password" placeholder="Create a password" required />
-      <button class="gold-button account-submit" type="submit">Create account</button>
-      <small>Demo onboarding for this release. Secure account storage will be connected before launch.</small>
-    </form>
-  `;
-
-  area.querySelector('[data-close-account-form]').addEventListener('click', () => {
-    area.innerHTML = '';
-  });
-
-  area.querySelector('#createAccountForm').addEventListener('submit', event => {
-    event.preventDefault();
-    restoreAtlas('account');
-  });
-}
-
-document.getElementById('signOutButton').addEventListener('click', openSignOutDialog);
-document.getElementById('cancelSignOut').addEventListener('click', closeSignOutDialog);
-document.querySelectorAll('[data-cancel-signout]').forEach(el => el.addEventListener('click', closeSignOutDialog));
-document.getElementById('confirmSignOut').addEventListener('click', signOut);
-document.getElementById('showSignInButton').addEventListener('click', renderSignInForm);
-document.getElementById('showCreateAccountButton').addEventListener('click', renderCreateAccountForm);
-document.getElementById('openDemoButton').addEventListener('click', () => restoreAtlas('demo'));
-
-document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && signOutModal.classList.contains('open')) closeSignOutDialog();
-});
-
-if (localStorage.getItem('atlasSignedOut') === 'true') {
-  showWelcomeScreen();
-}
+document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
+document.querySelector('#chatForm').addEventListener('submit',e=>{e.preventDefault();const i=document.querySelector('#chatInput');const v=i.value.trim();if(v){answer(v);i.value='';}});
+document.querySelector('#newChat').addEventListener('click',()=>{document.querySelector('#chat').innerHTML='<div class="message atlas"><span>A</span><p>New conversation started. What would you like to review?</p></div>';document.querySelector('#topic').textContent='New conversation';});
+document.querySelector('#askBtn').addEventListener('click',()=>{document.querySelector('#atlasPanel').scrollIntoView({behavior:'smooth',block:'start'});document.querySelector('#chatInput').focus();});
+document.querySelector('#briefBtn').addEventListener('click',()=>openModal('Tonight’s Executive Brief',`<div class="brief-grid"><article><span>Financial health</span><strong>92</strong><small>Healthy</small></article><article><span>Annual savings</span><strong>$46,100</strong><small>4 opportunities</small></article><article><span>Top priority</span><strong>Insurance review</strong><small>$18,300 potential</small></article></div><p>Atlas recommends beginning the commercial insurance review first, followed by merchant processing. Cash flow remains healthy and no immediate liquidity risk was detected.</p>`));
+document.querySelector('#modalClose').addEventListener('click',()=>document.querySelector('#modal').classList.remove('open'));
+document.querySelector('#modal').addEventListener('click',e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('open')});
+document.querySelectorAll('.priority-row').forEach(row=>row.addEventListener('click',()=>{const p=priorities[Number(row.dataset.priority)];openModal(p.title,`<p>${p.detail}</p><div class="detail-box"><span>Estimated annual impact</span><strong>${p.savings?money.format(p.savings):'Positive operating trend'}</strong></div><button class="gold modal-action" id="askThis">Ask Atlas about this</button>`,'ATLAS INVESTIGATION');setTimeout(()=>document.querySelector('#askThis')?.addEventListener('click',()=>{document.querySelector('#modal').classList.remove('open');answer(`Explain ${p.title}`)}),0)}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));b.classList.add('active');toast(`${b.dataset.nav} selected`)}));
+document.querySelector('#reloadBtn').addEventListener('click',()=>{animateCounts();toast('Demo data reloaded')});
+document.querySelector('#presentationBtn').addEventListener('click',()=>{document.body.classList.toggle('presentation');toast(document.body.classList.contains('presentation')?'Presentation mode on':'Presentation mode off')});
