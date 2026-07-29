@@ -390,7 +390,7 @@ body.signed-out { overflow:hidden; }
 @media (max-width:600px){ .welcome-actions,.signout-actions{grid-template-columns:1fr;} .welcome-card{padding:34px 22px;} .welcome-card h1{font-size:34px;} }
 
 
-/* ATLAS 20.5 — ACCOUNT CHOICE */
+/* ATLAS 20.5.1 — ACCOUNT FLOW FIX */
 .account-choice-card {
   width: min(620px, calc(100vw - 32px));
 }
@@ -417,7 +417,7 @@ body.signed-out { overflow:hidden; }
 }
 
 .account-choice:hover {
-  border-color: #64734e;
+  border-color: #77643c;
   transform: translateY(-1px);
 }
 
@@ -532,20 +532,4 @@ body.signed-out { overflow:hidden; }
   margin-top: 11px;
   color: #687f96;
   line-height: 1.4;
-}
-
-@media (max-width: 560px) {
-  .account-choice-card {
-    padding: 22px 16px;
-  }
-
-  .account-choice {
-    grid-template-columns: 38px minmax(0, 1fr);
-    padding: 12px;
-  }
-
-  .choice-icon {
-    width: 36px;
-    height: 36px;
-  }
 }

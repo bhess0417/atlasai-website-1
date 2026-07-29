@@ -1,14 +1,12 @@
-# Atlas 20.5 — Account Choice
+# Atlas 20.5.1 — Account Flow Fix
 
-This incremental release starts from Atlas 20.4 and changes only the signed-out entry flow.
+This release fixes the signed-out entry flow.
 
-## Added
+- Sign in opens an email and password form.
+- Create a new account opens a separate onboarding form.
+- Open demo company is the only direct path into demo mode.
+- A complete sign out remains signed out after returning to the website.
+- The welcome screen no longer identifies the visitor as Brian before authentication.
+- Existing Atlas 20.4 dashboard features remain unchanged.
 
-- Returning after a confirmed sign out stays on the welcome screen.
-- Sign in opens an existing-account form.
-- Create a new account opens an onboarding form.
-- Open demo company is a separate, explicit choice.
-- Demo mode is not automatically restored after sign out.
-- Version label updated to Atlas 20.5.
-
-The sign-in and account-creation forms are front-end demonstrations. Production authentication and secure customer data storage will be connected before customer launch.
+The forms are front-end demonstrations. Secure production authentication will be connected before customer launch.
