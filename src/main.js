@@ -161,7 +161,7 @@ document.querySelector('#app').innerHTML = `
         </div>
         <div class="top-actions">
           <button class="outline-button">Presentation mode</button>
-          <span class="release-pill">ATLAS 20 · EVIDENCE MODE</span>
+          <span class="release-pill">ATLAS 20.2 · VERIFIED SAVINGS</span>
           <div class="profile">
             <span>BH</span>
             <div><strong>Brian Hess</strong><small>Owner</small></div>
@@ -181,7 +181,7 @@ document.querySelector('#app').innerHTML = `
       <main class="page">
         <div class="page-heading">
           <div>
-            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20</span>
+            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.2</span>
             <h1>Atlas Manufacturing Group</h1>
             <small>187 employees · 3 locations · 9,842 transactions</small>
           </div>
@@ -207,6 +207,19 @@ document.querySelector('#app').innerHTML = `
               <article class="panel kpi"><span>CASH ON HAND</span><strong>$2.84M</strong><small class="green">Low 90-day risk</small></article>
               <article class="panel kpi"><span>ACTIVE VENDORS</span><strong>412</strong><small class="green">Across 3 locations</small></article>
               <article class="panel kpi"><span>SAVINGS IDENTIFIED</span><strong>$46,100.00</strong><small class="green">4 ranked opportunities</small></article>
+            </section>
+
+            <section class="panel savings-proof-panel">
+              <div class="section-title">
+                <div><span>VALUE DELIVERED</span><h3>Atlas proves its financial impact</h3></div>
+                <span class="verified-pill">VERIFIED BY ATLAS</span>
+              </div>
+              <div class="savings-proof-grid">
+                <article><span>SAVINGS IDENTIFIED</span><strong>$46,100</strong><small>4 ranked opportunities</small></article>
+                <article><span>VERIFIED SAVINGS</span><strong>$18,400</strong><small>Implemented and confirmed</small></article>
+                <article><span>SAVINGS YTD</span><strong>$127,800</strong><small>January through July</small></article>
+                <article><span>ROI MULTIPLE</span><strong>12.8×</strong><small>Value versus subscription cost</small></article>
+              </div>
             </section>
 
             <section id="transactions-section" class="panel confidence-panel">
