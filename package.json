@@ -1,6 +1,6 @@
 {
-  "name": "atlas-20-4-signout-welcome",
-  "version": "20.4.0",
+  "name": "atlas-20-5-account-choice",
+  "version": "20.5.0",
   "private": true,
   "type": "module",
   "scripts": {

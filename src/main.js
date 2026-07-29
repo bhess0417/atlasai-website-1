@@ -165,7 +165,7 @@ document.querySelector('#app').innerHTML = `
         </div>
         <div class="top-actions">
           <button class="outline-button">Presentation mode</button>
-          <span class="release-pill">ATLAS 20.4 · SIGN OUT</span>
+          <span class="release-pill">ATLAS 20.5 · SIGN OUT</span>
           <div class="profile">
             <span>BH</span>
             <div><strong>Brian Hess</strong><small>Owner</small></div>
@@ -332,7 +332,7 @@ document.querySelector('#app').innerHTML = `
         <button id="signInButton" class="gold-button">Sign in</button>
         <button id="openDemoButton" class="outline-button">Open demo company</button>
       </div>
-      <small>Atlas SmartLedger · Version 20.4</small>
+      <small>Atlas SmartLedger · Version 20.5</small>
     </div>
   </section>
   <div id="toast" class="toast"></div>
@@ -706,4 +706,127 @@ document.getElementById('signInButton').addEventListener('click', restoreAtlas);
 document.getElementById('openDemoButton').addEventListener('click', restoreAtlas);
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && signOutModal.classList.contains('open')) closeSignOutDialog();
+});
+
+
+function renderWelcome() {
+  document.querySelector('#app').innerHTML = `
+    <div class="welcome-shell">
+      <section class="welcome-card account-choice-card">
+        <div class="welcome-brand">
+          <div class="brand-mark welcome-mark">A</div>
+          <div>
+            <span>ATLAS AI</span>
+            <strong>SmartLedger</strong>
+          </div>
+        </div>
+
+        <span class="welcome-eyebrow">EXECUTIVE FINANCIAL INTELLIGENCE</span>
+        <h1>Welcome to Atlas</h1>
+        <p>Choose how you would like to continue.</p>
+
+        <div class="account-choice-grid">
+          <button class="account-choice primary-choice" id="showSignIn">
+            <span class="choice-icon">↳</span>
+            <span><strong>Sign in</strong><small>Access an existing Atlas account</small></span>
+          </button>
+
+          <button class="account-choice" id="showCreateAccount">
+            <span class="choice-icon">＋</span>
+            <span><strong>Create a new account</strong><small>Set up a new company workspace</small></span>
+          </button>
+
+          <button class="account-choice demo-choice" id="openDemoCompany">
+            <span class="choice-icon">◇</span>
+            <span><strong>Open demo company</strong><small>Explore Atlas Manufacturing Group</small></span>
+          </button>
+        </div>
+
+        <div id="accountFormArea" class="account-form-area" aria-live="polite"></div>
+
+        <small class="welcome-version">Atlas SmartLedger · Version 20.5</small>
+      </section>
+    </div>
+  `;
+
+  document.querySelector('#showSignIn').addEventListener('click', renderSignInForm);
+  document.querySelector('#showCreateAccount').addEventListener('click', renderCreateAccountForm);
+  document.querySelector('#openDemoCompany').addEventListener('click', () => {
+    sessionStorage.setItem('atlasSessionMode', 'demo');
+    
+function renderSignInForm() {
+  const area = document.querySelector('#accountFormArea');
+  if (!area) return;
+
+  area.innerHTML = `
+    <form id="signInForm" class="account-form">
+      <div class="form-heading">
+        <span>SIGN IN</span>
+        <button type="button" class="form-close" data-close-account-form>×</button>
+      </div>
+      <label>Email address</label>
+      <input type="email" id="signInEmail" placeholder="you@company.com" required />
+      <label>Password</label>
+      <input type="password" id="signInPassword" placeholder="Enter your password" required />
+      <button class="gold-button account-submit" type="submit">Sign in</button>
+      <small>This release demonstrates the account flow. Secure customer authentication will connect to the production identity service.</small>
+    </form>
+  `;
+
+  area.querySelector('[data-close-account-form]').addEventListener('click', () => area.innerHTML = '');
+  area.querySelector('#signInForm').addEventListener('submit', event => {
+    event.preventDefault();
+    sessionStorage.setItem('atlasSessionMode', 'account');
+    localStorage.removeItem('atlasSignedOut');
+    renderDashboard();
+  });
+}
+
+function renderCreateAccountForm() {
+  const area = document.querySelector('#accountFormArea');
+  if (!area) return;
+
+  area.innerHTML = `
+    <form id="createAccountForm" class="account-form">
+      <div class="form-heading">
+        <span>CREATE ACCOUNT</span>
+        <button type="button" class="form-close" data-close-account-form>×</button>
+      </div>
+      <label>Full name</label>
+      <input type="text" id="newAccountName" placeholder="Your name" required />
+      <label>Company name</label>
+      <input type="text" id="newCompanyName" placeholder="Company name" required />
+      <label>Email address</label>
+      <input type="email" id="newAccountEmail" placeholder="you@company.com" required />
+      <label>Create password</label>
+      <input type="password" id="newAccountPassword" placeholder="Create a password" required />
+      <button class="gold-button account-submit" type="submit">Create account</button>
+      <small>This release demonstrates onboarding. Secure account creation and storage will be connected before customer launch.</small>
+    </form>
+  `;
+
+  area.querySelector('[data-close-account-form]').addEventListener('click', () => area.innerHTML = '');
+  area.querySelector('#createAccountForm').addEventListener('submit', event => {
+    event.preventDefault();
+    sessionStorage.setItem('atlasSessionMode', 'account');
+    localStorage.removeItem('atlasSignedOut');
+    renderDashboard();
+  });
+}
+
+if (localStorage.getItem('atlasSignedOut') === 'true') {
+  renderWelcome();
+} else {
+  renderDashboard();
+}
+  });
+}
+
+
+// Atlas 20.5 entry-state safeguard.
+// A confirmed sign out sets this marker so returning to the site stays on account choice.
+window.addEventListener('beforeunload', () => {
+  if (!sessionStorage.getItem('atlasSessionMode') && document.querySelector('.welcome-shell')) {
+    localStorage.setItem('atlasSignedOut', 'true');
+  }
 });
