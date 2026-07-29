@@ -533,3 +533,46 @@ body.signed-out { overflow:hidden; }
   color: #687f96;
   line-height: 1.4;
 }
+
+/* ATLAS 20.6 — FINANCIAL IMPORT CENTER */
+.import-center-view{padding:38px 40px 64px;min-height:calc(100vh - 188px);background:radial-gradient(circle at 40% 0,#10243d 0,#07111d 42%,#07111d 100%)}
+.import-page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;margin-bottom:18px}
+.import-page-heading>div>span,.import-summary-card>span,.import-help strong,.analyze-footer span,.import-history-header{color:#7890ad;font-size:10px;letter-spacing:.17em;font-weight:900}
+.import-page-heading h1{margin:7px 0 6px;font-family:Georgia,serif;font-size:32px}
+.import-page-heading p{margin:0;color:#91a4ba}
+.import-success-banner{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:14px 17px;border:1px solid #25604f;border-radius:15px;background:linear-gradient(90deg,#10352e,#10273a)}
+.import-success-banner[hidden]{display:none}
+.success-icon{width:36px;height:36px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:#174b3e;color:#61dfb5;font-size:19px;font-weight:900}
+.import-success-banner strong,.import-success-banner small{display:block}.import-success-banner small{margin-top:3px;color:#8fa8bc}
+.import-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.import-summary-card{padding:17px;min-height:105px}.import-summary-card strong{display:block;margin:9px 0 3px;color:#f1ca62;font-family:Georgia,serif;font-size:25px}.import-summary-card small{color:#8195aa}
+.import-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(390px,.85fr);gap:14px;align-items:start}
+.import-uploader-panel,.import-queue-panel,.import-history-panel{padding:18px}
+.browser-private-pill{border:1px solid #1e5f4e;border-radius:999px;background:#0f382f;color:#5ddcb1!important;padding:7px 10px;white-space:nowrap}
+.statement-type-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.statement-type{min-height:82px;display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:9px;padding:11px;border:1px solid #294156;border-radius:13px;background:#0b1d2d;color:#e8eef4;text-align:left}
+.statement-type.active{border-color:#8a713e;background:linear-gradient(135deg,#132838,#28261d)}
+.statement-type strong,.statement-type small{display:block}.statement-type strong{font-size:12px}.statement-type small{margin-top:3px;color:#7f94aa;font-size:9px;line-height:1.3}
+.statement-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#172d40;color:#e9c65f;font-size:17px}
+.drop-zone{min-height:245px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:24px;border:1px dashed #45627a;border-radius:17px;background:linear-gradient(145deg,#0a1b2a,#0d2537);text-align:center;transition:.18s ease;cursor:pointer}
+.drop-zone:hover,.drop-zone.drag-active{border-color:#d1aa4d;background:linear-gradient(145deg,#102536,#27261d);transform:translateY(-1px)}
+.drop-zone>strong{font-size:17px}.drop-zone>span:not(.drop-icon){color:#9aadc1}.drop-zone>small{margin-top:6px;color:#657d94}
+.drop-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:15px;background:#182f43;color:#efc961;font-size:27px}
+.import-help{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;padding:11px 12px;border-radius:11px;background:#091927;color:#879caf;font-size:10px}
+.import-queue-panel{min-height:460px;display:flex;flex-direction:column}.import-clear-button:disabled{opacity:.35;cursor:default}
+.empty-import-queue{flex:1;min-height:285px;display:grid;place-content:center;justify-items:center;padding:24px;text-align:center}
+.empty-queue-icon{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:#132a3d;color:#e6c25d;font-size:25px}
+.empty-import-queue strong{margin-top:12px}.empty-import-queue p{max-width:310px;margin:6px 0 0;color:#7e93aa;font-size:12px;line-height:1.45}
+.import-queue{display:grid;gap:8px;margin-bottom:15px}
+.import-file-row{display:grid;grid-template-columns:38px minmax(0,1fr) 82px auto 28px;align-items:center;gap:9px;padding:10px;border:1px solid #294157;border-radius:12px;background:#0d2132}
+.file-type-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#172f43}
+.import-file-name strong,.import-file-name small,.import-file-count strong,.import-file-count small{display:block}
+.import-file-name strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}.import-file-name small,.import-file-count small{margin-top:3px;color:#71879d;font-size:9px}
+.import-file-count{text-align:right}.import-ready-status,.history-ready{color:#5dddb2;font-size:9px;font-weight:900}.remove-import{border:0;background:transparent;color:#879bae;font-size:19px}
+.analyze-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:auto;padding-top:14px;border-top:1px solid #243a4e}.analyze-footer strong{display:block;margin-top:4px;font-size:12px}.gold-button:disabled{opacity:.45;cursor:default}
+.import-history-panel{margin-top:14px}.import-history-header,.import-history-row{display:grid;grid-template-columns:2fr 1fr .75fr .65fr;gap:12px;align-items:center}
+.import-history-header{padding:0 11px 9px}.import-history-row{min-height:54px;padding:10px 11px;border-top:1px solid #22384b;color:#cdd7e1;font-size:11px}
+.import-history-row strong,.import-history-row small{display:block}.import-history-row small{margin-top:3px;color:#71879d;font-size:9px}.empty-history-row{padding:24px;border-top:1px solid #22384b;color:#71879d;text-align:center;font-size:12px}
+@media(max-width:1180px){.import-layout{grid-template-columns:1fr}}
+@media(max-width:820px){.import-center-view{padding:24px 14px 48px}.import-summary-grid,.statement-type-grid{grid-template-columns:1fr 1fr}.import-page-heading{flex-direction:column}}
+@media(max-width:560px){.import-summary-grid,.statement-type-grid{grid-template-columns:1fr}.import-file-row{grid-template-columns:36px minmax(0,1fr) auto}.import-file-count,.import-ready-status{grid-column:2;text-align:left}.remove-import{grid-column:3;grid-row:1}.import-history-header{display:none}.import-history-row{grid-template-columns:1fr 1fr}}

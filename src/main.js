@@ -165,7 +165,7 @@ document.querySelector('#app').innerHTML = `
         </div>
         <div class="top-actions">
           <button class="outline-button">Presentation mode</button>
-          <span class="release-pill">ATLAS 20.5.1 · SIGN OUT</span>
+          <span class="release-pill">ATLAS 20.6 · FINANCIAL IMPORTS</span>
           <div class="profile">
             <span>BH</span>
             <div><strong>Brian Hess</strong><small>Owner</small></div>
@@ -182,10 +182,84 @@ document.querySelector('#app').innerHTML = `
         <button class="outline-button">Reload demo data</button>
       </section>
 
-      <main class="page">
+      <section id="importCenterView" class="import-center-view" hidden>
+        <div class="import-page-heading">
+          <div>
+            <span>FINANCIAL IMPORT CENTER · RELEASE 20.6</span>
+            <h1>Bring your financial data into Atlas</h1>
+            <p>Upload CSV statements securely in your browser. Atlas will prepare them for analysis.</p>
+          </div>
+          <button id="returnToDashboard" class="outline-button">← Return to dashboard</button>
+        </div>
+
+        <section id="importSuccessBanner" class="import-success-banner" hidden>
+          <span class="success-icon">✓</span>
+          <div><strong id="importSuccessTitle">Files imported successfully</strong><small id="importSuccessText">Atlas is ready to analyze your data.</small></div>
+        </section>
+
+        <div class="import-summary-grid">
+          <article class="panel import-summary-card"><span>FILES IMPORTED</span><strong id="filesImportedMetric">0</strong><small>Current browser session</small></article>
+          <article class="panel import-summary-card"><span>TOTAL TRANSACTIONS</span><strong id="transactionsImportedMetric">0</strong><small>Rows prepared for analysis</small></article>
+          <article class="panel import-summary-card"><span>LAST IMPORT</span><strong id="lastImportMetric">—</strong><small>Local time</small></article>
+          <article class="panel import-summary-card"><span>ANALYSIS STATUS</span><strong id="analysisStatusMetric">Waiting</strong><small id="analysisStatusDetail">Upload a CSV to begin</small></article>
+        </div>
+
+        <div class="import-layout">
+          <section class="panel import-uploader-panel">
+            <div class="section-title">
+              <div><span>UPLOAD FINANCIAL DATA</span><h3>Select the statement type</h3></div>
+              <span class="browser-private-pill">PRIVATE · IN BROWSER</span>
+            </div>
+
+            <div class="statement-type-grid">
+              <button class="statement-type active" data-import-type="Bank statement"><span class="statement-icon">🏦</span><span><strong>Bank statement</strong><small>Checking and savings transactions</small></span></button>
+              <button class="statement-type" data-import-type="Credit card"><span class="statement-icon">▣</span><span><strong>Credit card</strong><small>Company card activity and fees</small></span></button>
+              <button class="statement-type" data-import-type="Accounts payable"><span class="statement-icon">▤</span><span><strong>Accounts payable</strong><small>Vendor bills and payment exports</small></span></button>
+            </div>
+
+            <label id="dropZone" class="drop-zone" for="financialFileInput">
+              <input id="financialFileInput" type="file" accept=".csv,text/csv" multiple hidden />
+              <span class="drop-icon">⇧</span>
+              <strong>Drag and drop CSV files here</strong>
+              <span>or click to browse your computer</span>
+              <small>CSV only · Files remain in this browser session</small>
+            </label>
+
+            <div class="import-help"><strong>Recommended columns</strong><span>Date, Description, Vendor, Amount, Category, Account</span></div>
+          </section>
+
+          <section class="panel import-queue-panel">
+            <div class="section-title">
+              <div><span>IMPORT QUEUE</span><h3>Files ready for Atlas</h3></div>
+              <button id="clearImportQueue" class="text-button import-clear-button" disabled>Clear all</button>
+            </div>
+
+            <div id="emptyImportQueue" class="empty-import-queue">
+              <span class="empty-queue-icon">◇</span>
+              <strong>No files imported yet</strong>
+              <p>Your uploaded statements will appear here with transaction counts and validation status.</p>
+            </div>
+
+            <div id="importQueue" class="import-queue" hidden></div>
+
+            <div class="analyze-footer">
+              <div><span>ATLAS ANALYSIS</span><strong id="analysisReadyText">Waiting for financial data</strong></div>
+              <button id="analyzeImportsButton" class="gold-button" disabled>Analyze with Atlas</button>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel import-history-panel">
+          <div class="section-title"><div><span>SESSION IMPORT HISTORY</span><h3>Recent financial files</h3></div></div>
+          <div class="import-history-header"><span>FILE</span><span>TYPE</span><span>TRANSACTIONS</span><span>STATUS</span></div>
+          <div id="importHistoryRows" class="import-history-rows"><div class="empty-history-row">No imports in this session.</div></div>
+        </section>
+      </section>
+
+      <main id="dashboardPage" class="page">
         <div class="page-heading">
           <div>
-            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.4</span>
+            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.6</span>
             <h1>Atlas Manufacturing Group</h1>
             <small>187 employees · 3 locations · 9,842 transactions</small>
           </div>
@@ -347,7 +421,7 @@ document.querySelector('#app').innerHTML = `
       </div>
 
       <div id="accountFormArea" class="account-form-area" aria-live="polite"></div>
-      <small>Atlas SmartLedger · Version 20.5.1</small>
+      <small>Atlas SmartLedger · Version 20.6</small>
     </div>
   </section>
   <div id="toast" class="toast"></div>
@@ -669,11 +743,187 @@ document.querySelectorAll('[data-open-investigation]').forEach(button => {
   });
 });
 
+
+const dashboardPage = document.getElementById('dashboardPage');
+const importCenterView = document.getElementById('importCenterView');
+const financialFileInput = document.getElementById('financialFileInput');
+const dropZone = document.getElementById('dropZone');
+const importQueue = document.getElementById('importQueue');
+const emptyImportQueue = document.getElementById('emptyImportQueue');
+const importHistoryRows = document.getElementById('importHistoryRows');
+const analyzeImportsButton = document.getElementById('analyzeImportsButton');
+const clearImportQueue = document.getElementById('clearImportQueue');
+let selectedImportType = 'Bank statement';
+let importedFiles = [];
+
+function showDashboardView() {
+  importCenterView.hidden = true;
+  dashboardPage.hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showImportCenter() {
+  dashboardPage.hidden = true;
+  importCenterView.hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function countCsvTransactions(text) {
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  if (!normalized) return 0;
+  return Math.max(0, normalized.split('\n').filter(line => line.trim()).length - 1);
+}
+
+function formatImportTime() {
+  return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function updateImportMetrics() {
+  const total = importedFiles.reduce((sum, file) => sum + file.transactions, 0);
+  document.getElementById('filesImportedMetric').textContent = importedFiles.length.toLocaleString('en-US');
+  document.getElementById('transactionsImportedMetric').textContent = total.toLocaleString('en-US');
+  document.getElementById('lastImportMetric').textContent = importedFiles.length ? importedFiles[importedFiles.length - 1].time : '—';
+  document.getElementById('analysisStatusMetric').textContent = importedFiles.length ? 'Ready' : 'Waiting';
+  document.getElementById('analysisStatusDetail').textContent = importedFiles.length ? 'Files validated for analysis' : 'Upload a CSV to begin';
+  document.getElementById('analysisReadyText').textContent = importedFiles.length ? `${total.toLocaleString('en-US')} transactions ready` : 'Waiting for financial data';
+  analyzeImportsButton.disabled = importedFiles.length === 0;
+  clearImportQueue.disabled = importedFiles.length === 0;
+}
+
+function renderImportQueue() {
+  emptyImportQueue.hidden = importedFiles.length > 0;
+  importQueue.hidden = importedFiles.length === 0;
+
+  importQueue.innerHTML = importedFiles.map((file, index) => `
+    <article class="import-file-row">
+      <span class="file-type-icon">${file.type === 'Bank statement' ? '🏦' : file.type === 'Credit card' ? '▣' : '▤'}</span>
+      <div class="import-file-name"><strong>${file.name}</strong><small>${file.size} · ${file.time}</small></div>
+      <div class="import-file-count"><strong>${file.transactions.toLocaleString('en-US')}</strong><small>transactions</small></div>
+      <span class="import-ready-status">✓ READY</span>
+      <button class="remove-import" data-remove-import="${index}" aria-label="Remove ${file.name}">×</button>
+    </article>
+  `).join('');
+
+  importHistoryRows.innerHTML = importedFiles.length
+    ? importedFiles.slice().reverse().map(file => `
+      <div class="import-history-row">
+        <span><strong>${file.name}</strong><small>${file.size}</small></span>
+        <span>${file.type}</span>
+        <span>${file.transactions.toLocaleString('en-US')}</span>
+        <span class="history-ready">Ready</span>
+      </div>
+    `).join('')
+    : '<div class="empty-history-row">No imports in this session.</div>';
+
+  document.querySelectorAll('[data-remove-import]').forEach(button => {
+    button.addEventListener('click', () => {
+      importedFiles.splice(Number(button.dataset.removeImport), 1);
+      renderImportQueue();
+      updateImportMetrics();
+    });
+  });
+}
+
+async function importFinancialFiles(fileList) {
+  const files = Array.from(fileList).filter(file => file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv');
+  if (!files.length) {
+    showToast('Please select a CSV file');
+    return;
+  }
+
+  for (const file of files) {
+    try {
+      const text = await file.text();
+      importedFiles.push({
+        name: file.name,
+        type: selectedImportType,
+        transactions: countCsvTransactions(text),
+        size: file.size < 1024 ? `${file.size} B` : `${(file.size / 1024).toFixed(1)} KB`,
+        time: formatImportTime()
+      });
+    } catch {
+      showToast(`Could not read ${file.name}`);
+    }
+  }
+
+  renderImportQueue();
+  updateImportMetrics();
+
+  const total = importedFiles.reduce((sum, file) => sum + file.transactions, 0);
+  const banner = document.getElementById('importSuccessBanner');
+  document.getElementById('importSuccessTitle').textContent = `${importedFiles.length} ${importedFiles.length === 1 ? 'file' : 'files'} imported successfully`;
+  document.getElementById('importSuccessText').textContent = `Atlas prepared ${total.toLocaleString('en-US')} transactions for analysis.`;
+  banner.hidden = false;
+  setTimeout(() => { banner.hidden = true; }, 5000);
+}
+
+document.querySelectorAll('[data-import-type]').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('[data-import-type]').forEach(item => item.classList.remove('active'));
+    button.classList.add('active');
+    selectedImportType = button.dataset.importType;
+  });
+});
+
+financialFileInput.addEventListener('change', event => {
+  importFinancialFiles(event.target.files);
+  financialFileInput.value = '';
+});
+
+['dragenter', 'dragover'].forEach(name => dropZone.addEventListener(name, event => {
+  event.preventDefault();
+  dropZone.classList.add('drag-active');
+}));
+
+['dragleave', 'drop'].forEach(name => dropZone.addEventListener(name, event => {
+  event.preventDefault();
+  dropZone.classList.remove('drag-active');
+}));
+
+dropZone.addEventListener('drop', event => importFinancialFiles(event.dataTransfer.files));
+
+clearImportQueue.addEventListener('click', () => {
+  importedFiles = [];
+  renderImportQueue();
+  updateImportMetrics();
+  showToast('Import queue cleared');
+});
+
+analyzeImportsButton.addEventListener('click', () => {
+  if (!importedFiles.length) return;
+  analyzeImportsButton.disabled = true;
+  analyzeImportsButton.textContent = 'Analyzing…';
+  document.getElementById('analysisStatusMetric').textContent = 'Analyzing';
+  document.getElementById('analysisStatusDetail').textContent = 'Atlas is preparing your files';
+
+  setTimeout(() => {
+    analyzeImportsButton.textContent = 'Analysis ready ✓';
+    document.getElementById('analysisStatusMetric').textContent = 'Complete';
+    document.getElementById('analysisStatusDetail').textContent = 'Ready for Atlas questions';
+    document.getElementById('analysisReadyText').textContent = 'Analysis complete';
+    showToast('Atlas analysis is ready');
+  }, 1200);
+});
+
+document.getElementById('returnToDashboard').addEventListener('click', () => {
+  showDashboardView();
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.querySelector('[data-section="Dashboard"]').classList.add('active');
+});
+
 const sectionMap={'Dashboard':'dashboard-section','Financial Imports':'financial-imports-section','Transactions':'transactions-section','Import History':'import-history-section','Settings':'settings-section'};
 document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{
- document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
- btn.classList.add('active');
- const el=document.getElementById(sectionMap[btn.dataset.section]); if(el) el.scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (btn.dataset.section === 'Financial Imports') {
+    showImportCenter();
+    return;
+  }
+
+  showDashboardView();
+  const el = document.getElementById(sectionMap[btn.dataset.section]);
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
 }));
 const rpt=document.getElementById('reportModal');
 document.getElementById('fullReportButton').addEventListener('click',()=>{rpt.style.display='flex';});

@@ -1,6 +1,6 @@
 {
-  "name": "atlas-20-5-1-account-flow-fix",
-  "version": "20.5.1",
+  "name": "atlas-20-6-financial-import-center",
+  "version": "20.6.0",
   "private": true,
   "type": "module",
   "scripts": {
