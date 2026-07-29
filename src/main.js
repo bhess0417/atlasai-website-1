@@ -130,7 +130,7 @@ let conversationHistory = [
 ];
 
 document.querySelector('#app').innerHTML = `
-  <div class="app-shell">
+  <div id="appShell" class="app-shell">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">A</div>
@@ -153,7 +153,7 @@ document.querySelector('#app').innerHTML = `
           <span class="privacy-icon">◇</span>
           <div><strong>Private processing</strong><small>Files remain in your browser</small></div>
         </div>
-        <button class="signout">↪ <span>Sign out</span></button>
+        <button id="signOutButton" class="signout">↪ <span>Sign out</span></button>
       </div>
     </aside>
 
@@ -165,7 +165,7 @@ document.querySelector('#app').innerHTML = `
         </div>
         <div class="top-actions">
           <button class="outline-button">Presentation mode</button>
-          <span class="release-pill">ATLAS 20.3 · CONVERSATIONAL ATLAS</span>
+          <span class="release-pill">ATLAS 20.4 · SIGN OUT</span>
           <div class="profile">
             <span>BH</span>
             <div><strong>Brian Hess</strong><small>Owner</small></div>
@@ -185,7 +185,7 @@ document.querySelector('#app').innerHTML = `
       <main class="page">
         <div class="page-heading">
           <div>
-            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.3</span>
+            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.4</span>
             <h1>Atlas Manufacturing Group</h1>
             <small>187 employees · 3 locations · 9,842 transactions</small>
           </div>
@@ -307,6 +307,34 @@ document.querySelector('#app').innerHTML = `
       <button id="closeReport">Close</button>
     </div>
   </div>
+
+  <div id="signOutModal" class="auth-modal" aria-hidden="true">
+    <div class="auth-backdrop" data-cancel-signout></div>
+    <section class="signout-dialog" role="dialog" aria-modal="true" aria-labelledby="signOutTitle">
+      <span class="atlas-logo auth-logo">A</span>
+      <span class="auth-eyebrow">ATLAS AI · SMARTLEDGER</span>
+      <h2 id="signOutTitle">Sign out?</h2>
+      <p>Are you sure you want to end your Atlas session?</p>
+      <div class="signout-actions">
+        <button id="cancelSignOut" class="outline-button">Cancel</button>
+        <button id="confirmSignOut" class="gold-button">Sign out</button>
+      </div>
+    </section>
+  </div>
+
+  <section id="welcomeScreen" class="welcome-screen" hidden>
+    <div class="welcome-card">
+      <div class="welcome-brand"><span class="brand-mark">A</span></div>
+      <span class="auth-eyebrow">ATLAS AI · SMARTLEDGER</span>
+      <h1>Welcome back, Brian.</h1>
+      <p>Executive financial intelligence for clearer decisions, measurable savings, and confident action.</p>
+      <div class="welcome-actions">
+        <button id="signInButton" class="gold-button">Sign in</button>
+        <button id="openDemoButton" class="outline-button">Open demo company</button>
+      </div>
+      <small>Atlas SmartLedger · Version 20.4</small>
+    </div>
+  </section>
   <div id="toast" class="toast"></div>
 `;
 
@@ -639,3 +667,43 @@ rpt.addEventListener('click',e=>{if(e.target===rpt) rpt.style.display='none';});
 document.getElementById('investigateTop').addEventListener('click',()=>{rpt.style.display='none'; const o=opportunities.find(x=>x.id==='insurance'); if(o) renderInvestigation(o);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape') rpt.style.display='none';});
 renderChat();
+
+
+const signOutModal = document.getElementById('signOutModal');
+const appShell = document.getElementById('appShell');
+const welcomeScreen = document.getElementById('welcomeScreen');
+
+function openSignOutDialog() {
+  signOutModal.classList.add('open');
+  signOutModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeSignOutDialog() {
+  signOutModal.classList.remove('open');
+  signOutModal.setAttribute('aria-hidden', 'true');
+}
+
+function signOut() {
+  closeSignOutDialog();
+  appShell.hidden = true;
+  welcomeScreen.hidden = false;
+  document.body.classList.add('signed-out');
+}
+
+function restoreAtlas() {
+  welcomeScreen.hidden = true;
+  appShell.hidden = false;
+  document.body.classList.remove('signed-out');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('Welcome back to Atlas');
+}
+
+document.getElementById('signOutButton').addEventListener('click', openSignOutDialog);
+document.getElementById('cancelSignOut').addEventListener('click', closeSignOutDialog);
+document.querySelectorAll('[data-cancel-signout]').forEach(el => el.addEventListener('click', closeSignOutDialog));
+document.getElementById('confirmSignOut').addEventListener('click', signOut);
+document.getElementById('signInButton').addEventListener('click', restoreAtlas);
+document.getElementById('openDemoButton').addEventListener('click', restoreAtlas);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && signOutModal.classList.contains('open')) closeSignOutDialog();
+});

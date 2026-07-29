@@ -1,3 +1,3 @@
-# Atlas 20.3 — Conversational Atlas
+# Atlas 20.4 — Sign Out and Welcome
 
-Adds session conversation memory, active-topic awareness, natural follow-up questions, context-aware suggestions, and a New Conversation control. Built directly from the working Atlas 20.2 source.
+Adds a working Sign out confirmation, a polished welcome screen, and controls to return to the dashboard or open the demo company. All Atlas 20.3 features remain intact.

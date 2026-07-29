@@ -364,3 +364,27 @@ button { cursor: pointer; }
   font-size:10px;
 }
 .message p { white-space:pre-wrap; }
+
+
+/* ATLAS 20.4 — SIGN OUT + WELCOME */
+.auth-modal { position:fixed; inset:0; z-index:1200; display:none; align-items:center; justify-content:center; padding:20px; }
+.auth-modal.open { display:flex; }
+.auth-backdrop { position:absolute; inset:0; background:rgba(1,7,13,.82); backdrop-filter:blur(8px); }
+.signout-dialog { position:relative; width:min(430px,100%); border:1px solid #36536d; background:linear-gradient(180deg,#0d2235,#071522); border-radius:22px; padding:28px; text-align:center; box-shadow:0 30px 90px rgba(0,0,0,.55); }
+.auth-logo { width:50px; height:50px; margin:0 auto 14px; }
+.auth-eyebrow { display:block; color:#7f94aa; font-size:10px; letter-spacing:.2em; font-weight:900; }
+.signout-dialog h2 { margin:10px 0 8px; font-family:Georgia,serif; font-size:30px; }
+.signout-dialog p { margin:0; color:#a7b7c8; line-height:1.5; }
+.signout-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:22px; }
+.welcome-screen { position:fixed; inset:0; z-index:1100; display:grid; place-items:center; padding:24px; background:radial-gradient(circle at 50% 15%,#17334f 0,#07111d 45%,#030b14 100%); }
+.welcome-screen[hidden] { display:none; }
+.welcome-card { width:min(560px,100%); text-align:center; border:1px solid #29465d; background:linear-gradient(180deg,rgba(13,34,53,.96),rgba(5,18,30,.98)); border-radius:28px; padding:46px 38px; box-shadow:0 35px 100px rgba(0,0,0,.55); }
+.welcome-brand { display:flex; justify-content:center; margin-bottom:18px; }
+.welcome-card .brand-mark { width:64px; height:64px; font-size:35px; }
+.welcome-card h1 { margin:14px 0 10px; font-family:Georgia,serif; font-size:42px; }
+.welcome-card p { max-width:440px; margin:0 auto; color:#a8b7c7; line-height:1.6; }
+.welcome-actions { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:28px 0 20px; }
+.welcome-actions button { min-height:48px; }
+.welcome-card small { color:#60758b; letter-spacing:.08em; }
+body.signed-out { overflow:hidden; }
+@media (max-width:600px){ .welcome-actions,.signout-actions{grid-template-columns:1fr;} .welcome-card{padding:34px 22px;} .welcome-card h1{font-size:34px;} }

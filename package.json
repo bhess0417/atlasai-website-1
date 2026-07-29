@@ -1,6 +1,6 @@
 {
-  "name": "atlas-20-3-conversational-atlas",
-  "version": "20.3.0",
+  "name": "atlas-20-4-signout-welcome",
+  "version": "20.4.0",
   "private": true,
   "type": "module",
   "scripts": {
