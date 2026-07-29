@@ -324,3 +324,43 @@ button { cursor: pointer; }
 .savings-proof-grid strong { margin:8px 0 4px; color:#f1ca61; font-family:Georgia,serif; font-size:25px; white-space:nowrap; }
 .savings-proof-grid small { color:#63deb6; font-size:10px; }
 @media (max-width:760px) { .savings-proof-grid { grid-template-columns:1fr 1fr; } }
+
+
+/* ATLAS 20.3 — CONVERSATIONAL MEMORY */
+.topic-bar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-bottom:1px solid #20384d;
+  background:#0a1c2b;
+}
+.topic-bar span,.topic-bar strong { display:block; }
+.topic-bar span { color:#7890ad; font-size:8px; letter-spacing:.17em; font-weight:900; }
+.topic-bar strong { margin-top:4px; color:#f0c95f; font-size:12px; }
+.topic-bar button {
+  border:1px solid #355067;
+  background:#102537;
+  color:#aab8c7;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.follow-up-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  padding:0 14px 12px;
+}
+.follow-up-actions button {
+  border:1px solid #2f6a5b;
+  background:#10362f;
+  color:#72dfbd;
+  border-radius:999px;
+  padding:7px 9px;
+  font-size:10px;
+}
+.message p { white-space:pre-wrap; }

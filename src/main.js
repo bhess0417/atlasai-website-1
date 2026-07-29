@@ -124,6 +124,10 @@ const opportunities = [
 
 let selectedOpportunity = null;
 let currentMode = 'chat';
+let activeTopic = null;
+let conversationHistory = [
+  { who: 'atlas', text: 'I am ready to help. Open any opportunity or ask about savings, risk, vendors, or cash flow.' }
+];
 
 document.querySelector('#app').innerHTML = `
   <div class="app-shell">
@@ -161,7 +165,7 @@ document.querySelector('#app').innerHTML = `
         </div>
         <div class="top-actions">
           <button class="outline-button">Presentation mode</button>
-          <span class="release-pill">ATLAS 20.2 · VERIFIED SAVINGS</span>
+          <span class="release-pill">ATLAS 20.3 · CONVERSATIONAL ATLAS</span>
           <div class="profile">
             <span>BH</span>
             <div><strong>Brian Hess</strong><small>Owner</small></div>
@@ -181,7 +185,7 @@ document.querySelector('#app').innerHTML = `
       <main class="page">
         <div class="page-heading">
           <div>
-            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.2</span>
+            <span>ATLAS EXECUTIVE WORKSPACE · RELEASE 20.3</span>
             <h1>Atlas Manufacturing Group</h1>
             <small>187 employees · 3 locations · 9,842 transactions</small>
           </div>
@@ -313,17 +317,24 @@ function renderChat() {
     <header>
       <div class="atlas-title">
         <span class="atlas-logo">A</span>
-        <div><span>ATLAS · EXECUTIVE COPILOT</span><strong>Ask Atlas</strong><small>Follow up on the brief without leaving your dashboard.</small></div>
+        <div><span>ATLAS · EXECUTIVE COPILOT</span><strong>Ask Atlas</strong><small>Ask a question, then continue naturally with follow-ups.</small></div>
       </div>
       <span class="ready-status">● READY</span>
     </header>
 
-    <div id="chat" class="chat">
-      <div class="message atlas-message">
-        <span class="avatar atlas-avatar">A</span>
-        <p>I am ready to help. Open any opportunity to see the evidence, reasoning, confidence, and next action.</p>
-      </div>
+    <div class="topic-bar">
+      <div><span>CURRENTLY DISCUSSING</span><strong id="activeTopicLabel">${activeTopic ? activeTopic.title : 'General business overview'}</strong></div>
+      <button id="newConversation" type="button">New conversation</button>
     </div>
+
+    <div id="chat" class="chat">
+      ${conversationHistory.map(message => message.who === 'atlas'
+        ? `<div class="message atlas-message"><span class="avatar atlas-avatar">A</span><p>${message.text}</p></div>`
+        : `<div class="message user-message"><p>${message.text}</p><span class="avatar user-avatar">BH</span></div>`
+      ).join('')}
+    </div>
+
+    <div id="followUpActions" class="follow-up-actions"></div>
 
     <div class="quick-actions">
       <button data-prompt="Explain the top priority">Explain top priority</button>
@@ -335,9 +346,12 @@ function renderChat() {
       <input id="atlasInput" placeholder="Ask Atlas a question..." autocomplete="off" />
       <button class="gold-button" type="submit">Send →</button>
     </form>
-    <small class="grounding">Demo answers are grounded in Atlas Manufacturing Group data.</small>
+    <small class="grounding">Atlas remembers this session and uses the current investigation as context.</small>
   `;
   bindChatEvents();
+  renderFollowUps();
+  const chat = document.querySelector('#chat');
+  chat.scrollTop = chat.scrollHeight;
 }
 
 function renderInvestigation(opportunity) {
@@ -456,8 +470,10 @@ function bindInvestigationEvents(opportunity) {
   });
 
   document.querySelector('#askWhy').addEventListener('click', () => {
+    activeTopic = opportunity;
+    selectedOpportunity = opportunity;
     renderChat();
-    setTimeout(() => answer(`Why is ${opportunity.title} ranked #${opportunity.rank}?`), 50);
+    setTimeout(() => answer('Why?'), 50);
   });
 
   document.querySelector('#markComplete').addEventListener('click', (event) => {
@@ -468,14 +484,8 @@ function bindInvestigationEvents(opportunity) {
 }
 
 function bindChatEvents() {
-  const replies = {
-    'Explain the top priority': 'Commercial insurance is ranked first because premiums are 18% above the peer benchmark, no competitive rebid has occurred in 31 months, and two overlapping riders were detected. Estimated annual savings: $18,300.',
-    'Where can we find savings?': 'Atlas identified four ranked opportunities totaling $46,100 annually: commercial insurance, merchant processing, overlapping software, and freight contracts.',
-    'What should I watch this week?': 'Watch the insurance renewal window, merchant-processing fee growth, and the 12% freight-cost variance at the West location.'
-  };
-
   document.querySelectorAll('[data-prompt]').forEach(btn =>
-    btn.addEventListener('click', () => answer(btn.dataset.prompt, replies))
+    btn.addEventListener('click', () => answer(btn.dataset.prompt))
   );
 
   document.querySelector('#atlasForm').addEventListener('submit', (event) => {
@@ -483,12 +493,36 @@ function bindChatEvents() {
     const input = document.querySelector('#atlasInput');
     const value = input.value.trim();
     if (!value) return;
-    answer(value, replies);
+    answer(value);
     input.value = '';
+  });
+
+  document.querySelector('#newConversation').addEventListener('click', () => {
+    selectedOpportunity = null;
+    activeTopic = null;
+    conversationHistory = [
+      { who: 'atlas', text: 'New conversation started. What would you like to review?' }
+    ];
+    renderChat();
+  });
+}
+
+function renderFollowUps() {
+  const container = document.querySelector('#followUpActions');
+  if (!container) return;
+
+  const prompts = activeTopic
+    ? ['Why?', 'Show the evidence', 'Estimate the savings', 'Draft an email', 'What happens if we wait?']
+    : ['Explain the top priority', 'Show all savings', 'What should I do first?'];
+
+  container.innerHTML = prompts.map(prompt => `<button type="button" data-follow-up="${prompt}">${prompt}</button>`).join('');
+  container.querySelectorAll('[data-follow-up]').forEach(button => {
+    button.addEventListener('click', () => answer(button.dataset.followUp));
   });
 }
 
 function addMessage(text, who = 'atlas') {
+  conversationHistory.push({ who, text });
   const chat = document.querySelector('#chat');
   if (!chat) return;
   const wrapper = document.createElement('div');
@@ -500,20 +534,81 @@ function addMessage(text, who = 'atlas') {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function answer(prompt, replies = {}) {
+function detectTopic(prompt) {
+  const normalized = prompt.toLowerCase();
+  const aliases = {
+    insurance: ['insurance', 'premium', 'policy', 'broker', 'rider', 'renewal'],
+    processing: ['processing', 'merchant', 'card fee', 'gateway', 'processor'],
+    software: ['software', 'subscription', 'license', 'seat'],
+    freight: ['freight', 'shipping', 'logistics', 'carrier', 'shipment']
+  };
+
+  for (const [id, words] of Object.entries(aliases)) {
+    if (words.some(word => normalized.includes(word))) {
+      return opportunities.find(item => item.id === id) || null;
+    }
+  }
+  return activeTopic;
+}
+
+function buildContextualResponse(prompt) {
+  const normalized = prompt.toLowerCase().trim();
+  const topic = activeTopic;
+
+  if (!topic) {
+    if (normalized.includes('top priority') || normalized.includes('first')) {
+      activeTopic = opportunities[0];
+      return `Commercial insurance is the top priority. Atlas found ${money.format(opportunities[0].impact)} in estimated annual savings with ${opportunities[0].confidence}% confidence.`;
+    }
+    if (normalized.includes('saving')) {
+      return 'Atlas identified four opportunities totaling $46,100 annually: commercial insurance, merchant processing, overlapping software, and freight contracts.';
+    }
+    if (normalized.includes('watch') || normalized.includes('risk')) {
+      return 'Watch the insurance renewal window, merchant-processing fee growth, and the 12% freight-cost variance at the West location.';
+    }
+    return 'The strongest next action is to investigate commercial insurance first. You can ask why, request the evidence, estimate the savings, or ask me to draft an email.';
+  }
+
+  if (normalized === 'why?' || normalized.includes('why') || normalized.includes('explain')) {
+    return `${topic.title} is ranked #${topic.rank} because ${topic.reasoning.join(' ')}`;
+  }
+  if (normalized.includes('evidence') || normalized.includes('show me')) {
+    return `The evidence includes ${topic.evidence.map(([name, detail]) => `${name}: ${detail}`).join('; ')}.`;
+  }
+  if (normalized.includes('estimate') || normalized.includes('how much') || normalized.includes('saving')) {
+    return `The estimated annual savings are ${money.format(topic.impact)}. Atlas confidence is ${topic.confidence}%, with an expected implementation timeline of ${topic.timeline}.`;
+  }
+  if (normalized.includes('draft') || normalized.includes('email')) {
+    return `Subject: ${topic.emailSubject}\n\n${topic.emailBody}`;
+  }
+  if (normalized.includes('wait') || normalized.includes('risk') || normalized.includes('delay')) {
+    return `Waiting could reduce negotiating leverage and delay realizing approximately ${money.format(topic.impact)} in annual savings. The recommended implementation window is ${topic.timeline}.`;
+  }
+  if (normalized.includes('what should') || normalized.includes('next') || normalized.includes('do')) {
+    return `${topic.action} Expected implementation: ${topic.timeline}.`;
+  }
+  if (normalized.includes('which rider') && topic.id === 'insurance') {
+    return 'The two overlapping areas are Employment Practices Liability and Cyber Incident Response. Atlas recommends confirming whether those protections already exist elsewhere before renewal.';
+  }
+
+  return `We are still discussing ${topic.title}. ${topic.summary} You can ask why, request evidence, estimate savings, draft an email, or ask about the risk of waiting.`;
+}
+
+function answer(prompt) {
   addMessage(prompt, 'user');
+
+  const detectedTopic = detectTopic(prompt);
+  if (detectedTopic) {
+    activeTopic = detectedTopic;
+    selectedOpportunity = detectedTopic;
+    const label = document.querySelector('#activeTopicLabel');
+    if (label) label.textContent = activeTopic.title;
+  }
+
   setTimeout(() => {
-    let response = replies[prompt];
-
-    if (!response && selectedOpportunity && prompt.toLowerCase().includes('why')) {
-      response = `${selectedOpportunity.title} is ranked #${selectedOpportunity.rank} because ${selectedOpportunity.reasoning.join(' ')}`;
-    }
-
-    if (!response) {
-      response = 'I reviewed the demo company’s 9,842 transactions. The strongest next action is to investigate commercial insurance first, followed by merchant processing. Open an opportunity to review the supporting evidence.';
-    }
-
+    const response = buildContextualResponse(prompt);
     addMessage(response, 'atlas');
+    renderFollowUps();
   }, 250);
 }
 
@@ -527,7 +622,7 @@ function showToast(message) {
 document.querySelectorAll('[data-open-investigation]').forEach(button => {
   button.addEventListener('click', () => {
     const opportunity = opportunities.find(item => item.id === button.dataset.openInvestigation);
-    if (opportunity) renderInvestigation(opportunity);
+    if (opportunity) { activeTopic = opportunity; selectedOpportunity = opportunity; renderInvestigation(opportunity); }
   });
 });
 
