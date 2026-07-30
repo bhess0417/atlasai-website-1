@@ -117,44 +117,6 @@ const replies = {
   'What should I do first?': 'Start with commercial insurance. The renewal window is approaching, the potential savings are highest, and the evidence confidence is 96%.'
 };
 
-function animateCounts(){
-  document.querySelectorAll('.count').forEach(el=>{
-    const target=Number(el.dataset.value); const start=performance.now(); const duration=900;
-    function tick(now){ const p=Math.min((now-start)/duration,1); const eased=1-Math.pow(1-p,3); const value=Math.round(target*eased);
-      if(el.classList.contains('money')) el.textContent=money.format(value);
-      else if(el.classList.contains('percent')) el.textContent=`${value}%`;
-      else el.textContent=value.toLocaleString('en-US');
-      if(p<1) requestAnimationFrame(tick);
-    } requestAnimationFrame(tick);
-  });
-}
-
-function addMessage(text, who='atlas'){
-  const chat=document.querySelector('#chat');
-  const div=document.createElement('div'); div.className=`message ${who}`;
-  div.innerHTML=who==='atlas'?`<span>A</span><p>${text}</p>`:`<p>${text}</p><span>BH</span>`;
-  chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
-}
-function answer(prompt){
-  addMessage(prompt,'user'); document.querySelector('#topic').textContent=prompt;
-  const typing=document.querySelector('#typing'); typing.classList.add('show');
-  setTimeout(()=>{ typing.classList.remove('show'); let reply=replies[prompt];
-    if(!reply){ const q=prompt.toLowerCase();
-      if(q.includes('cash')) reply='Cash on hand is $2.84 million. Atlas currently rates 90-day liquidity risk as low, with improving operating cash flow.';
-      else if(q.includes('vendor')) reply='Atlas reviewed 412 active vendors. The strongest vendor-related opportunities are merchant processing and freight pricing.';
-      else reply='Based on the demo company data, the best next step is to review the ranked CEO Action Center. Commercial insurance remains the highest-impact opportunity.';
-    }
-    addMessage(reply,'atlas');
-  },850);
-}
-
-function openModal(title, body, eyebrow='EXECUTIVE BRIEF'){
-  document.querySelector('#modalEyebrow').textContent=eyebrow;
-  document.querySelector('#modalTitle').textContent=title;
-  document.querySelector('#modalBody').innerHTML=body;
-  document.querySelector('#modal').classList.add('open');
-}
-function toast(msg){ const t=document.querySelector('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
 
 
 const dashboardHTML = document.querySelector('#mainPage').innerHTML;
