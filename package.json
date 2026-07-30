@@ -1,6 +1,6 @@
 {
-  "name": "atlas-ai-20-8-recovery",
-  "version": "20.8.1",
+  "name": "atlas-ai-20-9",
+  "version": "20.9.0",
   "private": true,
   "type": "module",
   "scripts": {

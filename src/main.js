@@ -37,7 +37,7 @@ app.innerHTML = `
       <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
       <div class="top-actions">
         <button class="outline" id="presentationBtn">Presentation mode</button>
-        <span class="release">ATLAS 20.8.1 · INTERNAL ACTIONS</span>
+        <span class="release">ATLAS 20.9 · CONTEXTUAL INTELLIGENCE</span>
         <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
     </header>
@@ -47,7 +47,7 @@ app.innerHTML = `
     <main class="page" id="mainPage">
       <section class="welcome-card">
         <div>
-          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 20.8.1</span>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 20.9</span>
           <h1>Good evening, Brian.</h1>
           <p>Atlas analyzed 9,842 transactions and prepared your priority list for today.</p>
           <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
@@ -99,6 +99,7 @@ app.innerHTML = `
             <button data-prompt="Explain the top priority">Explain the top priority</button>
             <button data-prompt="Show all savings">Show all savings</button>
             <button data-prompt="What should I do first?">What should I do first?</button>
+            <button data-prompt="What changed since yesterday?">What changed since yesterday?</button>
           </div>
           <form id="chatForm"><input id="chatInput" placeholder="Ask Atlas a question…" autocomplete="off"><button class="gold">Send</button></form>
         </aside>
@@ -114,7 +115,8 @@ app.innerHTML = `
 const replies = {
   'Explain the top priority': 'Commercial insurance is ranked first because premiums are 18% above comparable manufacturers, no competitive rebid has occurred in 31 months, and two policy riders appear to overlap. Estimated annual savings: $18,300.',
   'Show all savings': 'Atlas identified four savings opportunities totaling $46,100 annually: commercial insurance ($18,300), merchant processing ($14,800), software consolidation ($7,900), and freight ($5,100).',
-  'What should I do first?': 'Start with commercial insurance. The renewal window is approaching, the potential savings are highest, and the evidence confidence is 96%.'
+  'What should I do first?': 'Start with commercial insurance. The renewal window is approaching, the potential savings are highest, and the evidence confidence is 96%.',
+  'What changed since yesterday?': 'Since yesterday, merchant processing fees increased 0.4%, cash on hand improved by $38,200, and one new freight savings opportunity was identified.'
 };
 
 
@@ -124,7 +126,7 @@ const dashboardHTML = document.querySelector('#mainPage').innerHTML;
 const pageTemplates = {
   'Financial Imports': `
     <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">DATA CONNECTIONS</span><h1>Financial Imports</h1><p>Bring company financial data into SmartLedger for secure analysis.</p></div><span class="status-badge">READY TO IMPORT</span></div>
+      <div class="page-heading"><div><span class="micro">DATA CONNECTIONS</span><h1>Financial Imports</h1><p>Bring company financial data into SmartLedger for secure analysis.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Financial Imports">Ask Atlas about this page</button><span class="status-badge">READY TO IMPORT</span></div></div>
       <section class="import-grid">
         ${[['CSV file','Upload transaction exports from any bank or accounting platform.'],['Excel workbook','Import structured spreadsheets with automatic column matching.'],['QuickBooks','Prepare a secure QuickBooks connection for company records.'],['Bank statement','Add monthly PDF or CSV bank statements.'],['Credit cards','Import business card activity and identify duplicate spending.']].map(([t,d],i)=>`<button class="panel import-option" data-import="${t}"><span class="import-icon">${['CSV','XLS','QB','PDF','CC'][i]}</span><strong>${t}</strong><small>${d}</small><b>Choose source →</b></button>`).join('')}
       </section>
@@ -132,17 +134,17 @@ const pageTemplates = {
     </section>`,
   'Transactions': `
     <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">COMPANY LEDGER</span><h1>Transactions</h1><p>Search, filter, and review imported company spending.</p></div><button class="gold" id="exportTransactions">Export CSV</button></div>
+      <div class="page-heading"><div><span class="micro">COMPANY LEDGER</span><h1>Transactions</h1><p>Search, filter, and review imported company spending.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Transactions">Ask Atlas about this page</button><button class="gold" id="exportTransactions">Export CSV</button></div></div>
       <section class="panel data-panel"><div class="table-tools"><input id="transactionSearch" placeholder="Search vendor or category…"><select id="transactionFilter"><option>All categories</option><option>Insurance</option><option>Software</option><option>Freight</option><option>Payroll</option></select></div>${transactionsTable()}</section>
     </section>`,
   'Import History': `
     <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">AUDIT TRAIL</span><h1>Import History</h1><p>A complete record of data added to this workspace.</p></div><span class="status-badge">12 IMPORTS</span></div>
+      <div class="page-heading"><div><span class="micro">AUDIT TRAIL</span><h1>Import History</h1><p>A complete record of data added to this workspace.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Import History">Ask Atlas about this page</button><span class="status-badge">12 IMPORTS</span></div></div>
       <section class="panel data-panel">${historyTable()}</section>
     </section>`,
   'Payments & Billing': `
     <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">ACCOUNT MANAGEMENT</span><h1>Payments & Billing</h1><p>Manage the SmartLedger subscription, invoices, and payment method.</p></div><span class="status-badge active-plan">● ACTIVE</span></div>
+      <div class="page-heading"><div><span class="micro">ACCOUNT MANAGEMENT</span><h1>Payments & Billing</h1><p>Manage the SmartLedger subscription, invoices, and payment method.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Payments & Billing">Ask Atlas about this page</button><span class="status-badge active-plan">● ACTIVE</span></div></div>
       <section class="billing-grid">
         <article class="panel billing-plan"><span class="micro">CURRENT PLAN</span><h2>Professional Plan</h2><strong>$299<small>/month</small></strong><p>Executive intelligence for growing companies.</p><button class="gold billing-action" data-billing="Upgrade plan">Upgrade plan</button></article>
         <article class="panel billing-card"><span class="micro">PAYMENT METHOD</span><div class="card-visual"><b>VISA</b><strong>•••• 4321</strong><small>Expires 04/29</small></div><button class="outline billing-action" data-billing="Update payment method">Update payment method</button></article>
@@ -153,7 +155,7 @@ const pageTemplates = {
     </section>`,
   'Settings': `
     <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">WORKSPACE ADMINISTRATION</span><h1>Settings</h1><p>Control company details, notifications, security, and Atlas preferences.</p></div><button class="gold" id="saveSettings">Save changes</button></div>
+      <div class="page-heading"><div><span class="micro">WORKSPACE ADMINISTRATION</span><h1>Settings</h1><p>Control company details, notifications, security, and Atlas preferences.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Settings">Ask Atlas about this page</button><button class="gold" id="saveSettings">Save changes</button></div></div>
       <section class="settings-grid">
         <article class="panel settings-card"><h2>Company information</h2><label>Company name<input value="Atlas Manufacturing Group"></label><label>Industry<input value="Manufacturing"></label><label>Fiscal year<select><option>January–December</option></select></label></article>
         <article class="panel settings-card"><h2>Notifications</h2>${['Daily CEO briefing','Savings opportunity alerts','Import completion notices'].map((x,i)=>`<label class="toggle-row"><span>${x}</span><input type="checkbox" ${i<2?'checked':''}></label>`).join('')}</article>
@@ -164,7 +166,7 @@ const pageTemplates = {
 };
 
 function recentImportsTable(){return `<div class="table-wrap"><table><thead><tr><th>Source</th><th>Records</th><th>Status</th><th>Imported</th></tr></thead><tbody><tr><td>Operating Account.csv</td><td>4,281</td><td><span class="table-status success">Complete</span></td><td>Today, 6:42 PM</td></tr><tr><td>Corporate Visa.xlsx</td><td>1,943</td><td><span class="table-status success">Complete</span></td><td>Yesterday</td></tr><tr><td>QuickBooks Q2</td><td>3,618</td><td><span class="table-status success">Complete</span></td><td>July 25</td></tr></tbody></table></div>`}
-function transactionsTable(){const rows=[['Harbor Mutual Insurance','Jul 28, 2026','Insurance','$28,450','Review'],['Northstar Software','Jul 27, 2026','Software','$4,812','Approved'],['Midwest Freight Lines','Jul 27, 2026','Freight','$12,690','Review'],['Atlas Payroll Services','Jul 26, 2026','Payroll','$184,220','Approved'],['Metro Energy','Jul 25, 2026','Utilities','$19,740','Approved'],['ClearPay Processing','Jul 24, 2026','Merchant fees','$8,906','Opportunity']];return `<div class="table-wrap"><table id="transactionsTable"><thead><tr><th>Vendor</th><th>Date</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td>${i===4?`<span class="table-status ${x==='Approved'?'success':x==='Opportunity'?'warning':'review'}">${x}</span>`:x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+function transactionsTable(){const rows=[['Harbor Mutual Insurance','Jul 28, 2026','Insurance','$28,450','Review'],['Northstar Software','Jul 27, 2026','Software','$4,812','Approved'],['Midwest Freight Lines','Jul 27, 2026','Freight','$12,690','Review'],['Atlas Payroll Services','Jul 26, 2026','Payroll','$184,220','Approved'],['Metro Energy','Jul 25, 2026','Utilities','$19,740','Approved'],['ClearPay Processing','Jul 24, 2026','Merchant fees','$8,906','Opportunity']];return `<div class="table-wrap"><table id="transactionsTable"><thead><tr><th>Vendor</th><th>Date</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead><tbody>${rows.map((r,index)=>`<tr class="transaction-row" data-transaction="${index}">${r.map((x,i)=>`<td>${i===4?`<span class="table-status ${x==='Approved'?'success':x==='Opportunity'?'warning':'review'}">${x}</span>`:x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
 function historyTable(){return `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Source</th><th>Records</th><th>Status</th><th>Imported by</th></tr></thead><tbody>${[['Jul 28, 2026','Operating Account.csv','4,281'],['Jul 27, 2026','Corporate Visa.xlsx','1,943'],['Jul 25, 2026','QuickBooks Q2','3,618'],['Jul 18, 2026','Payroll Export.csv','824'],['Jul 11, 2026','Fleet Card.csv','702']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="table-status success">Complete</span></td><td>Brian Hess</td></tr>`).join('')}</tbody></table></div>`}
 function billingTable(){return `<div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${[['INV-2026-007','Jul 29, 2026'],['INV-2026-006','Jun 29, 2026'],['INV-2026-005','May 29, 2026']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>$299.00</td><td><span class="table-status success">Paid</span></td><td><button class="table-link billing-action" data-billing="Download ${r[0]}">Download</button></td></tr>`).join('')}</tbody></table></div>`}
 
@@ -232,7 +234,7 @@ function exportTransactionsCSV(){
 }
 
 function invoiceHTML(invoice='INV-2026-008', date='August 29, 2026'){
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 20.8.1.</p></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 20.9.</p></body></html>`;
 }
 
 function handleBillingAction(action){
@@ -259,7 +261,36 @@ function handleBillingAction(action){
   }
 }
 
+
+const pageIntelligence = {
+  'Financial Imports': ['3 recent imports completed successfully.', '9,842 records are available for analysis.', 'No import errors require attention.'],
+  'Transactions': ['Two transactions are marked for review.', 'Merchant processing contains a $14,800 annual savings opportunity.', 'Insurance is the highest-impact category today.'],
+  'Import History': ['All 12 imports completed successfully.', 'The latest operating-account import added 4,281 records.', 'No duplicate import was detected.'],
+  'Payments & Billing': ['Professional Plan is active.', 'Current usage is within plan limits.', 'The next scheduled charge is $299 on August 29, 2026.'],
+  'Settings': ['Daily CEO briefings are enabled.', 'Conversation context memory is enabled.', 'Two-factor authentication is active for the owner account.']
+};
+
+function askAtlasAboutPage(name){
+  const insights=pageIntelligence[name]||['Atlas has reviewed this workspace.'];
+  openModal(`Atlas analysis: ${name}`, `<p>Atlas understands the page you are viewing and has prepared these immediate observations:</p><div class="context-insights">${insights.map((x,i)=>`<article><span>0${i+1}</span><strong>${x}</strong></article>`).join('')}</div><button class="gold modal-action" id="continueContextChat">Continue with Atlas</button>`, 'CONTEXTUAL INTELLIGENCE');
+  setTimeout(()=>document.querySelector('#continueContextChat')?.addEventListener('click',()=>{
+    document.querySelector('#modal').classList.remove('open');
+    showPage('Dashboard');
+    setTimeout(()=>{document.querySelector('#atlasPanel')?.scrollIntoView({behavior:'smooth',block:'start'});answer(`Review the ${name} page for me`)},50);
+  }),0);
+}
+
+function inspectTransaction(row){
+  const cells=[...row.querySelectorAll('td')].map(x=>x.textContent.trim());
+  const [vendor,date,category,amount,status]=cells;
+  const notes=status==='Opportunity'?'Atlas detected above-benchmark fees and recommends a pricing review.':status==='Review'?'This item differs from the expected category pattern and should be verified.':'This transaction matches normal historical behavior.';
+  openModal(vendor, `<div class="brief-grid"><article><span>AMOUNT</span><strong>${amount}</strong><small>${date}</small></article><article><span>CATEGORY</span><strong>${category}</strong><small>Imported ledger</small></article><article><span>STATUS</span><strong>${status}</strong><small>Atlas classification</small></article></div><p>${notes}</p><button class="gold modal-action" id="askTransaction">Ask Atlas about this transaction</button>`, 'TRANSACTION INTELLIGENCE');
+  setTimeout(()=>document.querySelector('#askTransaction')?.addEventListener('click',()=>{document.querySelector('#modal').classList.remove('open');showPage('Dashboard');setTimeout(()=>answer(`Explain the ${vendor} transaction for ${amount}`),50)}),0);
+}
+
 function bindFunctionalPage(name){
+  document.querySelectorAll('.ask-page').forEach(b=>b.addEventListener('click',()=>askAtlasAboutPage(b.dataset.page)));
+  document.querySelectorAll('.transaction-row').forEach(r=>r.addEventListener('click',()=>inspectTransaction(r)));
   document.querySelectorAll('[data-import]').forEach(b=>b.addEventListener('click',()=>openModal(`Import ${b.dataset.import}`,`<p>Selecting a real file will be connected in the production data-integration phase. This demo confirms the complete import workflow and interface.</p><button class="gold modal-action" id="simulateImport">Simulate successful import</button>`,'FINANCIAL IMPORT')));
   document.addEventListener('click',e=>{if(e.target?.id==='simulateImport'){document.querySelector('#modal').classList.remove('open');toast('Demo import completed successfully')}} ,{once:true});
   const search=document.querySelector('#transactionSearch'); const filter=document.querySelector('#transactionFilter');
@@ -273,7 +304,7 @@ function bindFunctionalPage(name){
 
 function signOut(){
   sessionStorage.removeItem('atlasSession');
-  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 20.8.1 · Secure session cleared</small></section></div>`;
+  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 20.9 · Secure session cleared</small></section></div>`;
   document.querySelector('#demoEntry').addEventListener('click',()=>location.reload());
   document.querySelector('#accountEntry').addEventListener('click',()=>{document.querySelector('.signin-card').innerHTML=`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>Sign in</h1><label class="signin-label">Email<input type="email" placeholder="you@company.com"></label><label class="signin-label">Password<input type="password" placeholder="••••••••"></label><button class="gold" id="signinSubmit">Sign in</button><button class="outline" id="backChoice">Back</button>`;document.querySelector('#signinSubmit').addEventListener('click',()=>toast('Account authentication will connect during production setup'));document.querySelector('#backChoice').addEventListener('click',()=>location.reload())});
 }
