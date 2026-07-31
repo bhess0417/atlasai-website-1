@@ -37,7 +37,7 @@ app.innerHTML = `
       <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
       <div class="top-actions">
         <button class="outline" id="presentationBtn">Presentation mode</button>
-        <span class="release">ATLAS 21.2 · NATURAL CONVERSATION</span>
+        <span class="release">ATLAS 21.2.1 · CEO KNOWLEDGE EXPANSION</span>
         <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
     </header>
@@ -47,7 +47,7 @@ app.innerHTML = `
     <main class="page" id="mainPage">
       <section class="welcome-card">
         <div>
-          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 21.2</span>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 21.2.1</span>
           <h1 id="dynamicGreeting">Good afternoon, Brian.</h1>
           <p>Atlas completed your executive review and prepared the changes that need your attention.</p>
           <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
@@ -120,7 +120,7 @@ const replies = {
   'What changed since yesterday?': 'Since yesterday, merchant processing fees increased 0.4%, cash on hand improved by $38,200, one new freight savings opportunity was identified, and no new liquidity risk was detected.'
 };
 
-const MEMORY_KEY='atlasNaturalConversation21_2';
+const MEMORY_KEY='atlasNaturalConversation21_2_1';
 const conversationState={topic:'general',entity:'business overview',lastIntent:'overview',lastAnswer:'',recommendation:'Review the highest-impact savings opportunity first.'};
 
 function loadMemory(){
@@ -164,7 +164,23 @@ function detectIntent(prompt){
   if(/import|csv|excel|quickbooks|upload/.test(q)) return {type:'imports'};
   if(/bill|billing|plan|subscription|299|invoice/.test(q)) return {type:'billing'};
   if(/setting|notification|security|two-factor|memory|preference/.test(q)) return {type:'settings'};
-  if(/revenue|sales/.test(q)) return {type:'revenue'};
+  if(/revenue|sales|top line|bookings/.test(q)) return {type:'revenue'};
+  if(/profit|margin|ebitda|gross margin|net income|earnings/.test(q)) return {type:'profitability'};
+  if(/payroll|labor|wages|overtime|headcount|employee cost/.test(q)) return {type:'payroll'};
+  if(/tax|irs|sales tax|estimated tax/.test(q)) return {type:'taxes'};
+  if(/compliance|osha|regulation|regulatory|audit/.test(q)) return {type:'compliance'};
+  if(/receivable|accounts receivable|ar aging|collections|customer payment|days sales outstanding|dso/.test(q)) return {type:'receivables'};
+  if(/payable|accounts payable|ap aging|supplier payment/.test(q)) return {type:'payables'};
+  if(/inventory|stock level|slow moving|obsolete/.test(q)) return {type:'inventory'};
+  if(/debt|loan|interest|credit line|borrowing/.test(q)) return {type:'debt'};
+  if(/runway|how long.*cash|months of cash/.test(q)) return {type:'runway'};
+  if(/forecast|projection|outlook|next quarter|year end/.test(q)) return {type:'forecast'};
+  if(/budget|variance|over budget|under budget/.test(q)) return {type:'budget'};
+  if(/location|branch|site|division/.test(q)) return {type:'locations'};
+  if(/customer|client|concentration|churn/.test(q)) return {type:'customers'};
+  if(/duplicate|double charge/.test(q)) return {type:'duplicate'};
+  if(/anomal|unusual|outlier|suspicious/.test(q)) return {type:'anomalies'};
+  if(/largest expense|biggest expense|top cost|where.*spend/.test(q)) return {type:'expenses'};
   if(/risk|warning|concern/.test(q)) return {type:'risk'};
   if(isFollowUp(q)) return {type:'followup'};
   return {type:'unknown'};
@@ -179,7 +195,11 @@ function contextualFollowUp(type){
       software:'The opportunity exists because 27 paid seats show no activity in 90 days and several tools have overlapping functions.',
       freight:'The west location is using higher-cost lanes and more fragmented shipments than the other locations.',
       cash:'Cash improved because collections exceeded outgoing payments since yesterday, while no unusually large disbursement posted.',
-      invoice:'The invoice was flagged because it is 22% above the vendor’s six-month average and includes an unusual freight surcharge.'
+      invoice:'The invoice was flagged because it is 22% above the vendor’s six-month average and includes an unusual freight surcharge.',
+      payroll:'Payroll rose because overtime increased at the west location and two temporary roles converted to full-time positions.',
+      profitability:'Margin pressure is coming mainly from insurance, processing fees, and west-location freight rather than a decline in revenue.',
+      receivables:'Receivables aged because three larger customers paid later than their normal pattern, increasing DSO.',
+      inventory:'Inventory is elevated because several slow-moving SKUs have not matched recent sales velocity.'
     };
     return reasons[topic]||'I can explain the reason, but I need to know which item you mean. Are you referring to insurance, merchant processing, software, freight, cash flow, or the vendor invoice?';
   }
@@ -190,7 +210,11 @@ function contextualFollowUp(type){
       software:'Send the inactive-seat list to department owners, confirm which licenses are still required, and cancel unused seats before the next renewal.',
       freight:'Compare the west location’s top five lanes, consolidate shipments where possible, and request updated carrier quotes.',
       invoice:'Hold approval temporarily, match the invoice to the purchase order, and ask the vendor to explain the freight surcharge.',
-      savings:'Begin with insurance, then merchant processing. Together they represent $33,100 of the $46,100 annual opportunity.'
+      savings:'Begin with insurance, then merchant processing. Together they represent $33,100 of the $46,100 annual opportunity.',
+      payroll:'Review overtime by department and compare staffing schedules before changing headcount.',
+      profitability:'Protect margin by acting on the top two savings opportunities before considering broad cost cuts.',
+      receivables:'Contact the three largest overdue accounts and tighten follow-up at 15, 30, and 45 days.',
+      inventory:'Pause reorders for slow-moving SKUs and validate demand before discounting inventory.'
     };
     return actions[topic]||conversationState.recommendation;
   }
@@ -200,7 +224,11 @@ function contextualFollowUp(type){
       processing:'The $14,800 estimate comes from the recent increase in the effective fee rate and the volume processed. A merchant statement would let Atlas separate interchange, assessments, and processor markup.',
       software:'The estimate assumes removal or renegotiation of inactive seats only. Atlas is not recommending removal of software that has active users or a clear operational purpose.',
       freight:'The opportunity is concentrated at the west location, where cost per shipment is 12% above the company average. Lane consolidation is likely the fastest first test.',
-      invoice:'The charge has not been labeled fraudulent or duplicate. It is a review item because its amount and surcharge differ from the vendor’s normal pattern.'
+      invoice:'The charge has not been labeled fraudulent or duplicate. It is a review item because its amount and surcharge differ from the vendor’s normal pattern.',
+      payroll:'Payroll is 4.2% above the prior month, led by overtime at the west location. Base wages remain close to plan.',
+      profitability:'Gross margin is 31.6%, down 0.8 percentage points from the prior period. The largest recoverable drivers are insurance and processing fees.',
+      receivables:'Accounts receivable totals $1.74 million; $286,000 is over 45 days. Three customers account for most of the aging.',
+      inventory:'Inventory totals $3.1 million, with about $214,000 classified as slow-moving in the demo data.'
     };
     return details[topic]||`We are currently discussing ${conversationState.entity}. Ask “why,” “what should I do next,” or name the detail you want me to examine.`;
   }
@@ -241,9 +269,25 @@ function buildReply(prompt){
     case 'imports': setContext('imports','latest financial import','imports','Review warnings before the next upload.'); return 'The latest imports completed successfully: 9,842 records are available, no import errors require attention, and no duplicate import was detected.';
     case 'billing': setContext('billing','Professional Plan billing','billing','No billing action is required today.'); return 'The Professional Plan is active at $299 per month. Usage is within plan limits, the next scheduled charge is August 29, 2026, and invoices are available on Payments & Billing.';
     case 'settings': setContext('settings','Atlas settings','settings','Keep daily briefings and two-factor authentication enabled.'); return 'Daily CEO briefings, conversation memory, and owner two-factor authentication are enabled. You can change these controls on the Settings page.';
-    case 'revenue': setContext('revenue','annual revenue trend','revenue','Continue monitoring; no deterioration signal is present.'); return 'Annual revenue is $28.4 million in the demo workspace. Atlas shows a healthy operating trend and no immediate revenue deterioration signal.';
-    case 'risk': setContext('risk','current business risks','risk','Address the insurance renewal before the deadline.'); return 'The highest current risk is the approaching insurance renewal at above-benchmark pricing. Liquidity risk is low; the remaining flagged items are opportunities rather than critical threats.';
-    default: return `I understand the question, but I need a little more context to answer it responsibly. Are you asking about savings, insurance, merchant processing, software, freight, cash flow, a transaction, an import, billing, or settings?`;
+    case 'revenue': setContext('revenue','annual revenue trend','revenue','Continue monitoring; no deterioration signal is present.'); return 'Annual revenue is $28.4 million in the demo workspace, up 6.4% year over year. The strongest contribution comes from the central location, while the west location is growing more slowly. No immediate top-line deterioration signal is present.';
+    case 'profitability': setContext('profitability','profitability and margins','profitability','Act on insurance and processing costs before broad cuts.'); return 'Gross margin is 31.6%, down 0.8 percentage points from the prior period. Revenue remains healthy; the pressure is concentrated in insurance, merchant processing, and west-location freight. Addressing the top two savings opportunities could recover a meaningful portion of the decline.';
+    case 'payroll': setContext('payroll','payroll and labor costs','payroll','Review overtime by department before changing headcount.'); return 'Payroll is 4.2% above the prior month. Most of the increase comes from overtime at the west location and two temporary roles moving to full-time status. Base wage expense remains close to plan.';
+    case 'taxes': setContext('taxes','tax obligations','taxes','Confirm filing dates with your tax professional.'); return 'The demo workspace shows no overdue tax item. Estimated payments and sales-tax obligations appear current, but Atlas should not replace your tax professional. The next step is to confirm filing dates and reconcile taxable sales before submission.';
+    case 'compliance': setContext('compliance','compliance status','compliance','Review the OSHA update and document ownership.'); return 'No critical compliance breach is shown in the demo data. One OSHA-related policy update should be reviewed, assigned to an owner, and documented before the next internal audit.';
+    case 'receivables': setContext('receivables','accounts receivable','receivables','Contact the three largest overdue accounts.'); return 'Accounts receivable totals $1.74 million, with $286,000 over 45 days. Three customers account for most of the aging. Collections are not yet a liquidity threat, but focused follow-up could improve cash conversion.';
+    case 'payables': setContext('payables','accounts payable','payables','Preserve discounts while avoiding early payments without benefit.'); return 'Accounts payable is within the normal range. Atlas found no immediate payment bottleneck. The best opportunity is to capture available early-payment discounts without paying suppliers early when no discount exists.';
+    case 'inventory': setContext('inventory','inventory position','inventory','Pause reorders on slow-moving SKUs.'); return 'Inventory totals $3.1 million. About $214,000 is slow-moving based on recent sales velocity. Atlas recommends pausing reorders for those SKUs and validating demand before using discounts.';
+    case 'debt': setContext('debt','debt and borrowing costs','debt','Review variable-rate exposure before refinancing.'); return 'Debt service is manageable in the demo workspace. The main watch item is variable-rate exposure on the operating line. A rate comparison may be worthwhile, but there is no current covenant or liquidity warning.';
+    case 'runway': setContext('runway','cash runway','runway','Continue monitoring; no immediate capital action is needed.'); return 'Based on current cash and the recent operating pattern, the demo company has more than 12 months of operating coverage. Because the company is cash-flow positive in this scenario, a traditional startup runway calculation is less useful than monitoring liquidity and collections.';
+    case 'forecast': setContext('forecast','financial forecast','forecast','Refresh the forecast after insurance quotes and collections updates.'); return 'The current outlook supports continued revenue growth with modest margin pressure. The biggest forecast variables are the insurance renewal, merchant processing costs, and collection timing on three large accounts.';
+    case 'budget': setContext('budget','budget performance','budget','Correct concentrated variances instead of broad cuts.'); return 'Overall spending is close to plan, but insurance, processing fees, and west-location freight are above budget. Payroll is modestly elevated due to overtime. Atlas recommends targeted corrections rather than across-the-board reductions.';
+    case 'locations': setContext('locations','location performance','locations','Review west-location freight and overtime.'); return 'The central location is the strongest contributor. The west location has two pressure points: freight cost per shipment is 12% above average and overtime is elevated. The east location is performing close to plan.';
+    case 'customers': setContext('customers','customer portfolio','customers','Monitor the three largest overdue accounts.'); return 'Customer concentration is within the demo alert threshold, but three larger accounts drive most receivable aging. Atlas sees a collections issue to manage, not a broad churn signal.';
+    case 'duplicate': setContext('duplicate','duplicate-payment review','duplicate','Verify invoice number, amount, and date before paying.'); return 'Atlas has not confirmed a duplicate payment in the demo data. One invoice deserves review because the amount and surcharge differ from the vendor’s normal pattern. Match invoice number, amount, purchase order, and payment status before approval.';
+    case 'anomalies': setContext('anomalies','financial anomalies','anomalies','Review the flagged invoice and west-location cost variances.'); return 'The most important anomalies are one vendor invoice 22% above its six-month average, west-location freight 12% above the company average, and elevated overtime. None is labeled fraud; each requires supporting-document review.';
+    case 'expenses': setContext('expenses','largest business expenses','expenses','Start with costs that are both large and negotiable.'); return 'The largest controllable cost areas in the demo are payroll, insurance, freight, merchant processing, and software. Payroll is largest overall, but insurance and processing offer the fastest near-term savings without reducing staff.';
+    case 'risk': setContext('risk','current business risks','risk','Address the insurance renewal before the deadline.'); return 'The highest current risk is the approaching insurance renewal at above-benchmark pricing. Secondary risks are receivable aging, west-location freight and overtime, and the flagged vendor invoice. Liquidity risk remains low.';
+    default: return `I understand the question, but I need a little more context to answer it responsibly. Are you asking about savings, revenue, profitability, payroll, cash flow, receivables, inventory, vendors, transactions, taxes, compliance, imports, billing, or risk?`;
   }
 }
 
@@ -278,7 +322,14 @@ function followUpsFor(prompt){
     imports:['Did any imports fail?','How many records were added?','Review transactions'],
     billing:['When is the next charge?','What does the plan include?','Show billing history'],
     settings:['Which alerts are enabled?','Is two-factor active?','How does memory work?'],
-    transaction:['Why was it flagged?','Is it a duplicate?','Show related savings']
+    transaction:['Why was it flagged?','Is it a duplicate?','Show related savings'],
+    profitability:['Why did margin decline?','What should I do next?','Show all savings'],
+    payroll:['Why did payroll rise?','What should I do next?','Compare locations'],
+    receivables:['Which customers are overdue?','What should I do next?','Explain cash flow'],
+    inventory:['What is slow-moving?','What should I do next?','Show business risks'],
+    forecast:['What could change the forecast?','What should I do next?','Show business risks'],
+    anomalies:['Why was it flagged?','What should I do next?','Is it a duplicate?'],
+    expenses:['Which cost can I reduce first?','Show all savings','Explain profitability']
   };
   return map[type]||['Show all savings','Explain the top priority','What changed since yesterday?'];
 }
@@ -290,7 +341,7 @@ function renderFollowUps(prompt){
   row.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
 }
 
-const COPILOT_STORAGE_KEY='atlasCopilotConversation21_2';
+const COPILOT_STORAGE_KEY='atlasCopilotConversation21_2_1';
 const defaultCopilotMessage='I completed your executive review. Since your last login, I found four changes: insurance remains the largest savings opportunity, a new $5,100 freight opportunity appeared, cash improved by $38,200, and one vendor invoice needs review. Which should we examine first?';
 
 function escapeMessage(text){return String(text).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -372,7 +423,7 @@ function exportTransactionsCSV(){
 }
 
 function invoiceHTML(invoice='INV-2026-008', date='August 29, 2026'){
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 21.2.</p></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 21.2.1.</p></body></html>`;
 }
 
 function handleBillingAction(action){
@@ -442,7 +493,7 @@ function bindFunctionalPage(name){
 
 function signOut(){
   sessionStorage.removeItem('atlasSession');
-  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 21.2 · Secure session cleared</small></section></div>`;
+  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 21.2.1 · Secure session cleared</small></section></div>`;
   document.querySelector('#demoEntry').addEventListener('click',()=>location.reload());
   document.querySelector('#accountEntry').addEventListener('click',()=>{document.querySelector('.signin-card').innerHTML=`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>Sign in</h1><label class="signin-label">Email<input type="email" placeholder="you@company.com"></label><label class="signin-label">Password<input type="password" placeholder="••••••••"></label><button class="gold" id="signinSubmit">Sign in</button><button class="outline" id="backChoice">Back</button>`;document.querySelector('#signinSubmit').addEventListener('click',()=>toast('Account authentication will connect during production setup'));document.querySelector('#backChoice').addEventListener('click',()=>location.reload())});
 }
