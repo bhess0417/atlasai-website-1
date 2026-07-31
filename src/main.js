@@ -37,7 +37,7 @@ app.innerHTML = `
       <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
       <div class="top-actions">
         <button class="outline" id="presentationBtn">Presentation mode</button>
-        <span class="release">ATLAS 20.9 · CONTEXTUAL INTELLIGENCE</span>
+        <span class="release">ATLAS 20.9.1 · INTELLIGENCE ENGINE</span>
         <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
     </header>
@@ -47,7 +47,7 @@ app.innerHTML = `
     <main class="page" id="mainPage">
       <section class="welcome-card">
         <div>
-          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 20.9</span>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 20.9.1</span>
           <h1>Good evening, Brian.</h1>
           <p>Atlas analyzed 9,842 transactions and prepared your priority list for today.</p>
           <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
@@ -113,73 +113,78 @@ app.innerHTML = `
 `;
 
 const replies = {
-  'Explain the top priority': 'Commercial insurance is ranked first because premiums are 18% above comparable manufacturers, no competitive rebid has occurred in 31 months, and two policy riders appear to overlap. Estimated annual savings: $18,300.',
-  'Show all savings': 'Atlas identified four savings opportunities totaling $46,100 annually: commercial insurance ($18,300), merchant processing ($14,800), software consolidation ($7,900), and freight ($5,100).',
-  'What should I do first?': 'Start with commercial insurance. The renewal window is approaching, the potential savings are highest, and the evidence confidence is 96%.',
-  'What changed since yesterday?': 'Since yesterday, merchant processing fees increased 0.4%, cash on hand improved by $38,200, and one new freight savings opportunity was identified.'
+  'Explain the top priority': 'Commercial insurance is ranked first because premiums are 18% above comparable manufacturers, no competitive rebid has occurred in 31 months, and two policy riders appear to overlap. Estimated annual savings: $18,300. Recommended next step: request a competitive broker review before renewal.',
+  'Show all savings': 'Atlas identified four savings opportunities totaling $46,100 annually: commercial insurance ($18,300), merchant processing ($14,800), software consolidation ($7,900), and freight optimization ($5,100).',
+  'What should I do first?': 'Start with commercial insurance. It has the highest estimated impact, the renewal window is approaching, and Atlas confidence is 96%. After that, review merchant processing fees.',
+  'What changed since yesterday?': 'Since yesterday, merchant processing fees increased 0.4%, cash on hand improved by $38,200, one new freight savings opportunity was identified, and no new liquidity risk was detected.'
 };
 
+function detectIntent(prompt){
+  const q=String(prompt||'').toLowerCase().trim();
+  if(replies[prompt]) return {type:'exact', reply:replies[prompt]};
+  if(/top priority|highest priority|main priority|first priority/.test(q)) return {type:'priority'};
+  if(/all savings|show.*savings|saving opportunities|opportunit/.test(q)) return {type:'savings'};
+  if(/what.*do first|where.*start|next step|what should i do/.test(q)) return {type:'next'};
+  if(/yesterday|what changed|since yesterday|daily change/.test(q)) return {type:'changes'};
+  if(/insurance|premium|carrier|broker/.test(q)) return {type:'insurance'};
+  if(/merchant|processing fee|credit card fee/.test(q)) return {type:'processing'};
+  if(/software|subscription|license|seat/.test(q)) return {type:'software'};
+  if(/freight|shipping|logistics/.test(q)) return {type:'freight'};
+  if(/cash|liquidity|cash flow/.test(q)) return {type:'cash'};
+  if(/vendor|supplier/.test(q)) return {type:'vendor'};
+  if(/transaction|charge|payment|invoice/.test(q) && /explain|review|why|unusual|flag/.test(q)) return {type:'transaction'};
+  if(/import|csv|excel|quickbooks|upload/.test(q)) return {type:'imports'};
+  if(/bill|billing|plan|subscription|299|invoice/.test(q)) return {type:'billing'};
+  if(/setting|notification|security|two-factor|memory|preference/.test(q)) return {type:'settings'};
+  if(/revenue|sales/.test(q)) return {type:'revenue'};
+  if(/risk|warning|concern/.test(q)) return {type:'risk'};
+  return {type:'unknown'};
+}
 
+function buildReply(prompt){
+  const intent=detectIntent(prompt);
+  if(intent.reply) return intent.reply;
+  switch(intent.type){
+    case 'priority': return replies['Explain the top priority'];
+    case 'savings': return replies['Show all savings'];
+    case 'next': return replies['What should I do first?'];
+    case 'changes': return replies['What changed since yesterday?'];
+    case 'insurance': return 'Commercial insurance is the largest current opportunity. Premiums are 18% above the peer benchmark, the account has not been competitively rebid in 31 months, and Atlas estimates $18,300 in annual savings. Recommended action: gather the current policy and loss runs, then request three carrier quotes.';
+    case 'processing': return 'Merchant processing is the second-largest opportunity. Effective fees increased 11% this quarter, creating an estimated $14,800 annual savings opportunity. Recommended action: calculate the blended rate and request competitive pricing from the processor.';
+    case 'software': return 'Atlas found 27 paid software seats with no activity in the last 90 days. Consolidating inactive or overlapping licenses could save about $7,900 annually. Confirm ownership before removing licenses.';
+    case 'freight': return 'Freight costs at the west location are 12% above the company average. Atlas estimates $5,100 in annual savings through carrier comparison, lane consolidation, and contract review.';
+    case 'cash': return 'Cash on hand is $2.84 million. Atlas currently rates 90-day liquidity risk as low, and cash improved by $38,200 since yesterday. No immediate cash-flow intervention is recommended.';
+    case 'vendor': return 'Atlas reviewed 412 active vendors across three locations. The strongest vendor-related opportunities are insurance, merchant processing, software licensing, and freight. No concentration risk currently exceeds the demo alert threshold.';
+    case 'transaction': return `For the transaction you referenced, Atlas would evaluate the vendor, amount, category, historical pattern, duplicate risk, and benchmark variance. In this demo, click a transaction row to open its specific analysis. Your question was: “${prompt}”`;
+    case 'imports': return 'The latest imports completed successfully: 9,842 records are available for analysis, no import errors require attention, and no duplicate import was detected. CSV, Excel, and QuickBooks workflows are represented in the demo.';
+    case 'billing': return 'The Professional Plan is active at $299 per month. Current usage is within plan limits, the next scheduled charge is August 29, 2026, and invoices can be downloaded from Payments & Billing.';
+    case 'settings': return 'Daily CEO briefings, conversation context memory, and owner two-factor authentication are enabled. You can review or change these controls on the Settings page.';
+    case 'revenue': return 'Annual revenue is $28.4 million in the demo workspace. Atlas currently shows a healthy operating trend and no immediate revenue deterioration signal, while SmartLedger remains focused on cost, cash, and financial intelligence.';
+    case 'risk': return 'The highest current business risk is the approaching insurance renewal at above-benchmark pricing. Liquidity risk is low, and the remaining flagged items are savings opportunities rather than critical financial threats.';
+    default: return `I understand your question: “${prompt}” I do not yet have enough connected company data to answer it precisely. Try asking about savings, insurance, transactions, vendors, cash flow, imports, billing, settings, risks, or today’s priorities.`;
+  }
+}
 
-const dashboardHTML = document.querySelector('#mainPage').innerHTML;
+function followUpsFor(prompt){
+  const type=detectIntent(prompt).type;
+  const map={
+    insurance:['Show the $18,300 estimate','What should I do first?','Compare carriers'],
+    savings:['Explain the top priority','Rank by fastest payoff','What changed since yesterday?'],
+    processing:['How was $14,800 calculated?','Show all savings','What should I do first?'],
+    cash:['What changed since yesterday?','Show financial risks','Explain cash flow'],
+    imports:['Did any imports fail?','How many records were added?','Review transactions'],
+    billing:['When is the next charge?','What does the plan include?','Show billing history'],
+    settings:['Which alerts are enabled?','Is two-factor active?','How does memory work?'],
+    transaction:['Why was it flagged?','Is it a duplicate?','Show related savings']
+  };
+  return map[type]||['Show all savings','Explain the top priority','What changed since yesterday?'];
+}
 
-const pageTemplates = {
-  'Financial Imports': `
-    <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">DATA CONNECTIONS</span><h1>Financial Imports</h1><p>Bring company financial data into SmartLedger for secure analysis.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Financial Imports">Ask Atlas about this page</button><span class="status-badge">READY TO IMPORT</span></div></div>
-      <section class="import-grid">
-        ${[['CSV file','Upload transaction exports from any bank or accounting platform.'],['Excel workbook','Import structured spreadsheets with automatic column matching.'],['QuickBooks','Prepare a secure QuickBooks connection for company records.'],['Bank statement','Add monthly PDF or CSV bank statements.'],['Credit cards','Import business card activity and identify duplicate spending.']].map(([t,d],i)=>`<button class="panel import-option" data-import="${t}"><span class="import-icon">${['CSV','XLS','QB','PDF','CC'][i]}</span><strong>${t}</strong><small>${d}</small><b>Choose source →</b></button>`).join('')}
-      </section>
-      <section class="panel data-panel"><div class="section-head"><div><span class="micro">RECENT ACTIVITY</span><h2>Latest imports</h2></div></div>${recentImportsTable()}</section>
-    </section>`,
-  'Transactions': `
-    <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">COMPANY LEDGER</span><h1>Transactions</h1><p>Search, filter, and review imported company spending.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Transactions">Ask Atlas about this page</button><button class="gold" id="exportTransactions">Export CSV</button></div></div>
-      <section class="panel data-panel"><div class="table-tools"><input id="transactionSearch" placeholder="Search vendor or category…"><select id="transactionFilter"><option>All categories</option><option>Insurance</option><option>Software</option><option>Freight</option><option>Payroll</option></select></div>${transactionsTable()}</section>
-    </section>`,
-  'Import History': `
-    <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">AUDIT TRAIL</span><h1>Import History</h1><p>A complete record of data added to this workspace.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Import History">Ask Atlas about this page</button><span class="status-badge">12 IMPORTS</span></div></div>
-      <section class="panel data-panel">${historyTable()}</section>
-    </section>`,
-  'Payments & Billing': `
-    <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">ACCOUNT MANAGEMENT</span><h1>Payments & Billing</h1><p>Manage the SmartLedger subscription, invoices, and payment method.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Payments & Billing">Ask Atlas about this page</button><span class="status-badge active-plan">● ACTIVE</span></div></div>
-      <section class="billing-grid">
-        <article class="panel billing-plan"><span class="micro">CURRENT PLAN</span><h2>Professional Plan</h2><strong>$299<small>/month</small></strong><p>Executive intelligence for growing companies.</p><button class="gold billing-action" data-billing="Upgrade plan">Upgrade plan</button></article>
-        <article class="panel billing-card"><span class="micro">PAYMENT METHOD</span><div class="card-visual"><b>VISA</b><strong>•••• 4321</strong><small>Expires 04/29</small></div><button class="outline billing-action" data-billing="Update payment method">Update payment method</button></article>
-        <article class="panel billing-card"><span class="micro">NEXT BILLING</span><h2>August 29, 2026</h2><strong class="billing-total">$299.00</strong><small>Automatic payment enabled</small><button class="outline billing-action" data-billing="Download next invoice">Download invoice</button></article>
-      </section>
-      <section class="usage-grid">${[['Companies','1 of 3',33],['Users','5 of 10',50],['Transactions','9,842 this month',68]].map(([t,v,p])=>`<article class="panel usage-card"><span>${t}</span><strong>${v}</strong><div><i style="width:${p}%"></i></div></article>`).join('')}</section>
-      <section class="panel data-panel"><div class="section-head"><div><span class="micro">BILLING HISTORY</span><h2>Recent invoices</h2></div></div>${billingTable()}</section>
-    </section>`,
-  'Settings': `
-    <section class="functional-page">
-      <div class="page-heading"><div><span class="micro">WORKSPACE ADMINISTRATION</span><h1>Settings</h1><p>Control company details, notifications, security, and Atlas preferences.</p></div><div class="page-actions"><button class="outline ask-page" data-page="Settings">Ask Atlas about this page</button><button class="gold" id="saveSettings">Save changes</button></div></div>
-      <section class="settings-grid">
-        <article class="panel settings-card"><h2>Company information</h2><label>Company name<input value="Atlas Manufacturing Group"></label><label>Industry<input value="Manufacturing"></label><label>Fiscal year<select><option>January–December</option></select></label></article>
-        <article class="panel settings-card"><h2>Notifications</h2>${['Daily CEO briefing','Savings opportunity alerts','Import completion notices'].map((x,i)=>`<label class="toggle-row"><span>${x}</span><input type="checkbox" ${i<2?'checked':''}></label>`).join('')}</article>
-        <article class="panel settings-card"><h2>Security</h2><p>Two-factor authentication is enabled for the owner account.</p><button class="outline settings-action">Review security</button><button class="outline settings-action">Manage users</button></article>
-        <article class="panel settings-card"><h2>Atlas preferences</h2><label>Response detail<select><option>Executive summary</option><option>Detailed analysis</option></select></label><label class="toggle-row"><span>Remember conversation context</span><input type="checkbox" checked></label></article>
-      </section>
-    </section>`
-};
-
-function recentImportsTable(){return `<div class="table-wrap"><table><thead><tr><th>Source</th><th>Records</th><th>Status</th><th>Imported</th></tr></thead><tbody><tr><td>Operating Account.csv</td><td>4,281</td><td><span class="table-status success">Complete</span></td><td>Today, 6:42 PM</td></tr><tr><td>Corporate Visa.xlsx</td><td>1,943</td><td><span class="table-status success">Complete</span></td><td>Yesterday</td></tr><tr><td>QuickBooks Q2</td><td>3,618</td><td><span class="table-status success">Complete</span></td><td>July 25</td></tr></tbody></table></div>`}
-function transactionsTable(){const rows=[['Harbor Mutual Insurance','Jul 28, 2026','Insurance','$28,450','Review'],['Northstar Software','Jul 27, 2026','Software','$4,812','Approved'],['Midwest Freight Lines','Jul 27, 2026','Freight','$12,690','Review'],['Atlas Payroll Services','Jul 26, 2026','Payroll','$184,220','Approved'],['Metro Energy','Jul 25, 2026','Utilities','$19,740','Approved'],['ClearPay Processing','Jul 24, 2026','Merchant fees','$8,906','Opportunity']];return `<div class="table-wrap"><table id="transactionsTable"><thead><tr><th>Vendor</th><th>Date</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead><tbody>${rows.map((r,index)=>`<tr class="transaction-row" data-transaction="${index}">${r.map((x,i)=>`<td>${i===4?`<span class="table-status ${x==='Approved'?'success':x==='Opportunity'?'warning':'review'}">${x}</span>`:x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
-function historyTable(){return `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Source</th><th>Records</th><th>Status</th><th>Imported by</th></tr></thead><tbody>${[['Jul 28, 2026','Operating Account.csv','4,281'],['Jul 27, 2026','Corporate Visa.xlsx','1,943'],['Jul 25, 2026','QuickBooks Q2','3,618'],['Jul 18, 2026','Payroll Export.csv','824'],['Jul 11, 2026','Fleet Card.csv','702']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="table-status success">Complete</span></td><td>Brian Hess</td></tr>`).join('')}</tbody></table></div>`}
-function billingTable(){return `<div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${[['INV-2026-007','Jul 29, 2026'],['INV-2026-006','Jun 29, 2026'],['INV-2026-005','May 29, 2026']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>$299.00</td><td><span class="table-status success">Paid</span></td><td><button class="table-link billing-action" data-billing="Download ${r[0]}">Download</button></td></tr>`).join('')}</tbody></table></div>`}
-
-function animateCounts(){
-  document.querySelectorAll('.count').forEach(el=>{
-    const target=Number(el.dataset.value); const start=performance.now(); const duration=900;
-    function tick(now){ const p=Math.min((now-start)/duration,1); const eased=1-Math.pow(1-p,3); const value=Math.round(target*eased);
-      if(el.classList.contains('money')) el.textContent=money.format(value);
-      else if(el.classList.contains('percent')) el.textContent=`${value}%`;
-      else el.textContent=value.toLocaleString('en-US');
-      if(p<1) requestAnimationFrame(tick);
-    } requestAnimationFrame(tick);
-  });
+function renderFollowUps(prompt){
+  const row=document.querySelector('.quick-prompts');
+  if(!row) return;
+  row.innerHTML=followUpsFor(prompt).map(x=>`<button data-prompt="${x.replace(/"/g,'&quot;')}">${x}</button>`).join('');
+  row.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
 }
 
 function addMessage(text, who='atlas'){
@@ -189,11 +194,14 @@ function addMessage(text, who='atlas'){
   chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
 }
 function answer(prompt){
-  addMessage(prompt,'user'); const topic=document.querySelector('#topic'); if(topic) topic.textContent=prompt;
+  addMessage(prompt,'user');
+  const topic=document.querySelector('#topic'); if(topic) topic.textContent=prompt;
   const typing=document.querySelector('#typing'); typing?.classList.add('show');
-  setTimeout(()=>{ typing?.classList.remove('show'); let reply=replies[prompt]; const q=prompt.toLowerCase();
-    if(!reply){if(q.includes('cash')) reply='Cash on hand is $2.84 million. Atlas currently rates 90-day liquidity risk as low, with improving operating cash flow.'; else if(q.includes('vendor')) reply='Atlas reviewed 412 active vendors. The strongest vendor-related opportunities are merchant processing and freight pricing.'; else reply='Based on the demo company data, the best next step is to review the ranked CEO Action Center. Commercial insurance remains the highest-impact opportunity.';} addMessage(reply,'atlas');
-  },850);
+  setTimeout(()=>{
+    typing?.classList.remove('show');
+    addMessage(buildReply(prompt),'atlas');
+    renderFollowUps(prompt);
+  },650);
 }
 function openModal(title, body, eyebrow='EXECUTIVE BRIEF'){document.querySelector('#modalEyebrow').textContent=eyebrow;document.querySelector('#modalTitle').textContent=title;document.querySelector('#modalBody').innerHTML=body;document.querySelector('#modal').classList.add('open')}
 function toast(msg){const t=document.querySelector('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1700)}
@@ -234,7 +242,7 @@ function exportTransactionsCSV(){
 }
 
 function invoiceHTML(invoice='INV-2026-008', date='August 29, 2026'){
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 20.9.</p></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 20.9.1.</p></body></html>`;
 }
 
 function handleBillingAction(action){
@@ -304,7 +312,7 @@ function bindFunctionalPage(name){
 
 function signOut(){
   sessionStorage.removeItem('atlasSession');
-  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 20.9 · Secure session cleared</small></section></div>`;
+  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 20.9.1 · Secure session cleared</small></section></div>`;
   document.querySelector('#demoEntry').addEventListener('click',()=>location.reload());
   document.querySelector('#accountEntry').addEventListener('click',()=>{document.querySelector('.signin-card').innerHTML=`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>Sign in</h1><label class="signin-label">Email<input type="email" placeholder="you@company.com"></label><label class="signin-label">Password<input type="password" placeholder="••••••••"></label><button class="gold" id="signinSubmit">Sign in</button><button class="outline" id="backChoice">Back</button>`;document.querySelector('#signinSubmit').addEventListener('click',()=>toast('Account authentication will connect during production setup'));document.querySelector('#backChoice').addEventListener('click',()=>location.reload())});
 }
