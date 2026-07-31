@@ -10,5 +10,4 @@
 /* Release 21.0 executive copilot */
 .copilot-brief{margin:14px 14px 0;padding:14px;border:1px solid #476144;background:linear-gradient(135deg,rgba(202,168,74,.14),rgba(16,48,53,.78));border-radius:15px;display:grid;gap:6px}.copilot-brief strong{color:#f4df96;font-size:14px}.copilot-brief small{color:#9db2c7;line-height:1.45}.copilot-brief button{justify-self:start;min-height:34px;padding:0 11px;margin-top:3px}.atlas-panel .chat{height:286px}
 
-/* Release 21.1 conversational memory */
-.atlas-status{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.ready-pill.memory{color:#e7c65f;border-color:#6f5c24;background:#332a13}.atlas-panel header{align-items:flex-start}
+.copilot-status{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.memory-pill{font-size:10px;font-weight:800;letter-spacing:.08em;color:#7ee2b8;background:rgba(41,173,116,.12);border:1px solid rgba(66,211,145,.25);border-radius:999px;padding:7px 9px}.chat .message p{line-height:1.55;white-space:normal}

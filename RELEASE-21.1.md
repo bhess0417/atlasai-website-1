@@ -1,14 +1,8 @@
 # Atlas AI 21.1 — Conversational Memory
 
-## Added
-- Persistent conversation subject memory in Ask Atlas.
-- Natural follow-up handling for “Why?”, “Tell me more”, “What next?”, “Compare them”, and “Draft an email”.
-- Visible MEMORY ON indicator and current-topic label.
-- New Conversation clears both messages and remembered subject.
-
-## Preserved
-- Executive Copilot briefing
-- Navigation and page tools
-- Transactions CSV export
-- Payments and Billing actions
-- Settings and sign-out flow
+- Atlas remembers the last conversation topic and uses it for natural follow-up questions.
+- Short follow-ups such as “Why?”, “What next?”, “Compare them”, and “Tell me more” stay connected to the prior subject.
+- Added dedicated insurance follow-up paths for explanation, comparison, and next action.
+- Conversation history now retains the most recent 30 messages.
+- Added a visible MEMORY ON status and a working New conversation control.
+- Preserves all functionality from the stable 21.0 repository.
