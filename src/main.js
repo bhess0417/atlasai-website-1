@@ -165,6 +165,24 @@ function buildReply(prompt){
   }
 }
 
+function animateCounts(){
+  document.querySelectorAll('.count').forEach(el=>{
+    const target=Number(el.dataset.value);
+    const start=performance.now();
+    const duration=900;
+    function tick(now){
+      const progress=Math.min((now-start)/duration,1);
+      const eased=1-Math.pow(1-progress,3);
+      const value=Math.round(target*eased);
+      if(el.classList.contains('money')) el.textContent=money.format(value);
+      else if(el.classList.contains('percent')) el.textContent=`${value}%`;
+      else el.textContent=value.toLocaleString('en-US');
+      if(progress<1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
 function followUpsFor(prompt){
   const type=detectIntent(prompt).type;
   const map={
