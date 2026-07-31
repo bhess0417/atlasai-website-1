@@ -1,0 +1,14 @@
+ATLAS AI BUILD 21.1
+
+Modified files:
+- src/main.js
+- index.html
+- package.json
+- package-lock.json
+- RELEASE-21.1.md
+
+Verified markers:
+- ATLAS 21.1 · CONVERSATIONAL MEMORY
+- MEMORY ON
+- atlasCopilotContext21_1
+- follow-up routing for Why / What next / Draft an email
