@@ -37,7 +37,7 @@ app.innerHTML = `
       <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
       <div class="top-actions">
         <button class="outline" id="presentationBtn">Presentation mode</button>
-        <span class="release">ATLAS 20.9.1 · INTELLIGENCE ENGINE</span>
+        <span class="release">ATLAS 21.0 · EXECUTIVE COPILOT</span>
         <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
     </header>
@@ -47,9 +47,9 @@ app.innerHTML = `
     <main class="page" id="mainPage">
       <section class="welcome-card">
         <div>
-          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 20.9.1</span>
-          <h1>Good evening, Brian.</h1>
-          <p>Atlas analyzed 9,842 transactions and prepared your priority list for today.</p>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 21.0</span>
+          <h1 id="dynamicGreeting">Good afternoon, Brian.</h1>
+          <p>Atlas completed your executive review and prepared the changes that need your attention.</p>
           <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
         </div>
         <div class="welcome-stats">
@@ -91,9 +91,10 @@ app.innerHTML = `
         </div>
 
         <aside class="atlas-panel" id="atlasPanel">
-          <header><div class="atlas-title"><span class="atlas-logo">A</span><div><span>ATLAS · EXECUTIVE COPILOT</span><h2>Ask Atlas</h2><small>Continue naturally with follow-up questions.</small></div></div><span class="ready-pill green">● READY</span></header>
+          <header><div class="atlas-title"><span class="atlas-logo">A</span><div><span>ATLAS · EXECUTIVE COPILOT</span><h2>Ask Atlas</h2><small>Proactive briefings, follow-ups, and remembered context.</small></div></div><span class="ready-pill green">● READY</span></header>
           <div class="topic-row"><div><span>CURRENTLY DISCUSSING</span><strong id="topic">General business overview</strong></div><button id="newChat">New conversation</button></div>
-          <div class="chat" id="chat"><div class="message atlas"><span>A</span><p>Good evening, Brian. I have reviewed the latest demo data. Ask about savings, risk, vendors, cash flow, or today's priorities.</p></div></div>
+          <div class="copilot-brief" id="copilotBrief"><span class="micro">SINCE YOUR LAST LOGIN</span><strong>4 executive changes detected</strong><small>Insurance renewal risk, new freight savings, stronger cash, and one invoice review.</small><button class="ghost" id="reviewChangesBtn">Review changes</button></div>
+          <div class="chat" id="chat"></div>
           <div class="typing" id="typing"><span></span><span></span><span></span><em>Atlas is analyzing…</em></div>
           <div class="quick-prompts">
             <button data-prompt="Explain the top priority">Explain the top priority</button>
@@ -126,6 +127,9 @@ function detectIntent(prompt){
   if(/all savings|show.*savings|saving opportunities|opportunit/.test(q)) return {type:'savings'};
   if(/what.*do first|where.*start|next step|what should i do/.test(q)) return {type:'next'};
   if(/yesterday|what changed|since yesterday|daily change/.test(q)) return {type:'changes'};
+  if(/compare carriers|carrier quotes/.test(q)) return {type:'carriers'};
+  if(/18,300|estimate.*insurance|insurance.*estimate/.test(q)) return {type:'insuranceEstimate'};
+  if(/invoice.*review|review.*invoice|vendor invoice/.test(q)) return {type:'invoiceReview'};
   if(/insurance|premium|carrier|broker/.test(q)) return {type:'insurance'};
   if(/merchant|processing fee|credit card fee/.test(q)) return {type:'processing'};
   if(/software|subscription|license|seat/.test(q)) return {type:'software'};
@@ -149,6 +153,9 @@ function buildReply(prompt){
     case 'savings': return replies['Show all savings'];
     case 'next': return replies['What should I do first?'];
     case 'changes': return replies['What changed since yesterday?'];
+    case 'carriers': return 'Atlas recommends requesting quotes from three carriers using the same coverage schedule and loss-run package. Compare total premium, exclusions, deductibles, and overlapping riders—not price alone. The demo estimate assumes an 8–12% reduction from competitive rebidding.';
+    case 'insuranceEstimate': return 'The $18,300 insurance estimate is based on the current premium being 18% above the peer benchmark, a 31-month gap since the last competitive bid, and two potentially overlapping riders. Atlas applies a conservative achievable reduction rather than the full benchmark gap.';
+    case 'invoiceReview': return 'One vendor invoice is 22% above that vendor’s six-month average. Atlas recommends confirming the purchase order, checking for a duplicate freight surcharge, and validating approval before payment. No duplicate payment has been posted yet.';
     case 'insurance': return 'Commercial insurance is the largest current opportunity. Premiums are 18% above the peer benchmark, the account has not been competitively rebid in 31 months, and Atlas estimates $18,300 in annual savings. Recommended action: gather the current policy and loss runs, then request three carrier quotes.';
     case 'processing': return 'Merchant processing is the second-largest opportunity. Effective fees increased 11% this quarter, creating an estimated $14,800 annual savings opportunity. Recommended action: calculate the blended rate and request competitive pricing from the processor.';
     case 'software': return 'Atlas found 27 paid software seats with no activity in the last 90 days. Consolidating inactive or overlapping licenses could save about $7,900 annually. Confirm ownership before removing licenses.';
@@ -187,6 +194,9 @@ function followUpsFor(prompt){
   const type=detectIntent(prompt).type;
   const map={
     insurance:['Show the $18,300 estimate','What should I do first?','Compare carriers'],
+    carriers:['Show the $18,300 estimate','Draft broker questions','What should I do first?'],
+    insuranceEstimate:['Compare carriers','Explain the top priority','Show all savings'],
+    invoiceReview:['Why was it flagged?','Is it a duplicate?','What should I do first?'],
     savings:['Explain the top priority','Rank by fastest payoff','What changed since yesterday?'],
     processing:['How was $14,800 calculated?','Show all savings','What should I do first?'],
     cash:['What changed since yesterday?','Show financial risks','Explain cash flow'],
@@ -205,11 +215,32 @@ function renderFollowUps(prompt){
   row.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
 }
 
-function addMessage(text, who='atlas'){
+const COPILOT_STORAGE_KEY='atlasCopilotConversation21';
+const defaultCopilotMessage='I completed your executive review. Since your last login, I found four changes: insurance remains the largest savings opportunity, a new $5,100 freight opportunity appeared, cash improved by $38,200, and one vendor invoice needs review. Which should we examine first?';
+
+function escapeMessage(text){return String(text).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function loadConversation(){
+  try{const saved=JSON.parse(localStorage.getItem(COPILOT_STORAGE_KEY)||'[]');return Array.isArray(saved)&&saved.length?saved:[{who:'atlas',text:defaultCopilotMessage}]}catch{return [{who:'atlas',text:defaultCopilotMessage}]}
+}
+function saveConversation(){
+  const items=[...document.querySelectorAll('#chat .message')].map(el=>({who:el.classList.contains('user')?'user':'atlas',text:el.querySelector('p')?.textContent||''}));
+  localStorage.setItem(COPILOT_STORAGE_KEY,JSON.stringify(items.slice(-20)));
+}
+function restoreConversation(){
+  const chat=document.querySelector('#chat'); if(!chat) return; chat.innerHTML='';
+  loadConversation().forEach(m=>addMessage(m.text,m.who,false));
+}
+function setGreeting(){
+  const h=new Date().getHours(); const part=h<12?'morning':h<17?'afternoon':'evening';
+  const el=document.querySelector('#dynamicGreeting'); if(el) el.textContent=`Good ${part}, Brian.`;
+}
+function addMessage(text, who='atlas', persist=true){
   const chat=document.querySelector('#chat'); if(!chat) return;
   const div=document.createElement('div'); div.className=`message ${who}`;
-  div.innerHTML=who==='atlas'?`<span>A</span><p>${text}</p>`:`<p>${text}</p><span>BH</span>`;
+  const safe=escapeMessage(text).replace(/\n/g,'<br>');
+  div.innerHTML=who==='atlas'?`<span>A</span><p>${safe}</p>`:`<p>${safe}</p><span>BH</span>`;
   chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
+  if(persist) saveConversation();
 }
 function answer(prompt){
   addMessage(prompt,'user');
@@ -226,9 +257,12 @@ function toast(msg){const t=document.querySelector('#toast');t.textContent=msg;t
 
 function bindDashboard(){
   animateCounts();
+  setGreeting();
+  restoreConversation();
   document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
   document.querySelector('#chatForm')?.addEventListener('submit',e=>{e.preventDefault();const i=document.querySelector('#chatInput');const v=i.value.trim();if(v){answer(v);i.value=''}});
-  document.querySelector('#newChat')?.addEventListener('click',()=>{document.querySelector('#chat').innerHTML='<div class="message atlas"><span>A</span><p>New conversation started. What would you like to review?</p></div>';document.querySelector('#topic').textContent='New conversation'});
+  document.querySelector('#newChat')?.addEventListener('click',()=>{localStorage.removeItem(COPILOT_STORAGE_KEY);document.querySelector('#chat').innerHTML='';addMessage('New conversation started. I still have the current executive data available. What would you like to review?','atlas');document.querySelector('#topic').textContent='New conversation'});
+  document.querySelector('#reviewChangesBtn')?.addEventListener('click',()=>answer('What changed since yesterday?'));
   document.querySelector('#askBtn')?.addEventListener('click',()=>{document.querySelector('#atlasPanel').scrollIntoView({behavior:'smooth',block:'start'});document.querySelector('#chatInput').focus()});
   document.querySelector('#briefBtn')?.addEventListener('click',()=>openModal('Tonight’s Executive Brief',`<div class="brief-grid"><article><span>Financial health</span><strong>92</strong><small>Healthy</small></article><article><span>Annual savings</span><strong>$46,100</strong><small>4 opportunities</small></article><article><span>Top priority</span><strong>Insurance review</strong><small>$18,300 potential</small></article></div><p>Atlas recommends beginning the commercial insurance review first, followed by merchant processing. Cash flow remains healthy and no immediate liquidity risk was detected.</p>`));
   document.querySelectorAll('.priority-row').forEach(row=>row.addEventListener('click',()=>{const p=priorities[Number(row.dataset.priority)];openModal(p.title,`<p>${p.detail}</p><div class="detail-box"><span>Estimated annual impact</span><strong>${p.savings?money.format(p.savings):'Positive operating trend'}</strong></div><button class="gold modal-action" id="askThis">Ask Atlas about this</button>`,'ATLAS INVESTIGATION');setTimeout(()=>document.querySelector('#askThis')?.addEventListener('click',()=>{document.querySelector('#modal').classList.remove('open');answer(`Explain ${p.title}`)}),0)}));
@@ -260,7 +294,7 @@ function exportTransactionsCSV(){
 }
 
 function invoiceHTML(invoice='INV-2026-008', date='August 29, 2026'){
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 20.9.1.</p></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 21.0.</p></body></html>`;
 }
 
 function handleBillingAction(action){
@@ -330,7 +364,7 @@ function bindFunctionalPage(name){
 
 function signOut(){
   sessionStorage.removeItem('atlasSession');
-  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 20.9.1 · Secure session cleared</small></section></div>`;
+  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 21.0 · Secure session cleared</small></section></div>`;
   document.querySelector('#demoEntry').addEventListener('click',()=>location.reload());
   document.querySelector('#accountEntry').addEventListener('click',()=>{document.querySelector('.signin-card').innerHTML=`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>Sign in</h1><label class="signin-label">Email<input type="email" placeholder="you@company.com"></label><label class="signin-label">Password<input type="password" placeholder="••••••••"></label><button class="gold" id="signinSubmit">Sign in</button><button class="outline" id="backChoice">Back</button>`;document.querySelector('#signinSubmit').addEventListener('click',()=>toast('Account authentication will connect during production setup'));document.querySelector('#backChoice').addEventListener('click',()=>location.reload())});
 }
