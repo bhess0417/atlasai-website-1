@@ -37,7 +37,7 @@ app.innerHTML = `
       <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
       <div class="top-actions">
         <button class="outline" id="presentationBtn">Presentation mode</button>
-        <span class="release">ATLAS 21.2.2 · 1.0 READINESS SPRINT</span>
+        <span class="release">ATLAS 21.2.2 RECOVERY · PRODUCT READINESS</span>
         <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
     </header>
@@ -47,7 +47,7 @@ app.innerHTML = `
     <main class="page" id="mainPage">
       <section class="welcome-card">
         <div>
-          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 21.2.2</span>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · RELEASE 21.2.2 RECOVERY</span>
           <h1 id="dynamicGreeting">Good afternoon, Brian.</h1>
           <p>Atlas completed your executive review and prepared the changes that need your attention.</p>
           <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
@@ -113,6 +113,56 @@ app.innerHTML = `
 <div class="toast" id="toast"></div>
 `;
 
+const dashboardHTML = document.querySelector('#mainPage').innerHTML;
+
+const pageTemplates = {
+  'Financial Imports': `
+    <section class="functional-page">
+      <div class="page-heading"><div><span class="micro">DATA CONNECTIONS</span><h1>Financial Imports</h1><p>Bring company financial data into SmartLedger for secure analysis.</p></div><span class="status-badge">READY TO IMPORT</span></div>
+      <section class="import-grid">
+        ${[['CSV file','Upload transaction exports from any bank or accounting platform.'],['Excel workbook','Import structured spreadsheets with automatic column matching.'],['QuickBooks','Prepare a secure QuickBooks connection for company records.'],['Bank statement','Add monthly PDF or CSV bank statements.'],['Credit cards','Import business card activity and identify duplicate spending.']].map(([t,d],i)=>`<button class="panel import-option" data-import="${t}"><span class="import-icon">${['CSV','XLS','QB','PDF','CC'][i]}</span><strong>${t}</strong><small>${d}</small><b>Choose source →</b></button>`).join('')}
+      </section>
+      <section class="panel data-panel"><div class="section-head"><div><span class="micro">RECENT ACTIVITY</span><h2>Latest imports</h2></div></div>${recentImportsTable()}</section>
+    </section>`,
+  'Transactions': `
+    <section class="functional-page">
+      <div class="page-heading"><div><span class="micro">COMPANY LEDGER</span><h1>Transactions</h1><p>Search, filter, and review imported company spending.</p></div><button class="gold" id="exportTransactions">Export CSV</button></div>
+      <section class="panel data-panel"><div class="table-tools"><input id="transactionSearch" placeholder="Search vendor or category…"><select id="transactionFilter"><option>All categories</option><option>Insurance</option><option>Software</option><option>Freight</option><option>Payroll</option></select></div>${transactionsTable()}</section>
+    </section>`,
+  'Import History': `
+    <section class="functional-page">
+      <div class="page-heading"><div><span class="micro">AUDIT TRAIL</span><h1>Import History</h1><p>A complete record of data added to this workspace.</p></div><span class="status-badge">12 IMPORTS</span></div>
+      <section class="panel data-panel">${historyTable()}</section>
+    </section>`,
+  'Payments & Billing': `
+    <section class="functional-page">
+      <div class="page-heading"><div><span class="micro">ACCOUNT MANAGEMENT</span><h1>Payments & Billing</h1><p>Manage the SmartLedger subscription, invoices, and payment method.</p></div><span class="status-badge active-plan">● ACTIVE</span></div>
+      <section class="billing-grid">
+        <article class="panel billing-plan"><span class="micro">CURRENT PLAN</span><h2>Professional Plan</h2><strong>$299<small>/month</small></strong><p>Executive intelligence for growing companies.</p><button class="gold billing-action" data-billing="Upgrade plan">Upgrade plan</button></article>
+        <article class="panel billing-card"><span class="micro">PAYMENT METHOD</span><div class="card-visual"><b>VISA</b><strong>•••• 4321</strong><small>Expires 04/29</small></div><button class="outline billing-action" data-billing="Update payment method">Update payment method</button></article>
+        <article class="panel billing-card"><span class="micro">NEXT BILLING</span><h2>August 29, 2026</h2><strong class="billing-total">$299.00</strong><small>Automatic payment enabled</small><button class="outline billing-action" data-billing="Download next invoice">Download invoice</button></article>
+      </section>
+      <section class="usage-grid">${[['Companies','1 of 3',33],['Users','5 of 10',50],['Transactions','9,842 this month',68]].map(([t,v,p])=>`<article class="panel usage-card"><span>${t}</span><strong>${v}</strong><div><i style="width:${p}%"></i></div></article>`).join('')}</section>
+      <section class="panel data-panel"><div class="section-head"><div><span class="micro">BILLING HISTORY</span><h2>Recent invoices</h2></div></div>${billingTable()}</section>
+    </section>`,
+  'Settings': `
+    <section class="functional-page">
+      <div class="page-heading"><div><span class="micro">WORKSPACE ADMINISTRATION</span><h1>Settings</h1><p>Control company details, notifications, security, and Atlas preferences.</p></div><button class="gold" id="saveSettings">Save changes</button></div>
+      <section class="settings-grid">
+        <article class="panel settings-card"><h2>Company information</h2><label>Company name<input value="Atlas Manufacturing Group"></label><label>Industry<input value="Manufacturing"></label><label>Fiscal year<select><option>January–December</option></select></label></article>
+        <article class="panel settings-card"><h2>Notifications</h2>${['Daily CEO briefing','Savings opportunity alerts','Import completion notices'].map((x,i)=>`<label class="toggle-row"><span>${x}</span><input type="checkbox" ${i<2?'checked':''}></label>`).join('')}</article>
+        <article class="panel settings-card"><h2>Security</h2><p>Two-factor authentication is enabled for the owner account.</p><button class="outline settings-action">Review security</button><button class="outline settings-action">Manage users</button></article>
+        <article class="panel settings-card"><h2>Atlas preferences</h2><label>Response detail<select><option>Executive summary</option><option>Detailed analysis</option></select></label><label class="toggle-row"><span>Remember conversation context</span><input type="checkbox" checked></label></article>
+      </section>
+    </section>`
+};
+
+function recentImportsTable(){return `<div class="table-wrap"><table><thead><tr><th>Source</th><th>Records</th><th>Status</th><th>Imported</th></tr></thead><tbody><tr><td>Operating Account.csv</td><td>4,281</td><td><span class="table-status success">Complete</span></td><td>Today, 6:42 PM</td></tr><tr><td>Corporate Visa.xlsx</td><td>1,943</td><td><span class="table-status success">Complete</span></td><td>Yesterday</td></tr><tr><td>QuickBooks Q2</td><td>3,618</td><td><span class="table-status success">Complete</span></td><td>July 25</td></tr></tbody></table></div>`}
+function transactionsTable(){const rows=[['Harbor Mutual Insurance','Jul 28, 2026','Insurance','$28,450','Review'],['Northstar Software','Jul 27, 2026','Software','$4,812','Approved'],['Midwest Freight Lines','Jul 27, 2026','Freight','$12,690','Review'],['Atlas Payroll Services','Jul 26, 2026','Payroll','$184,220','Approved'],['Metro Energy','Jul 25, 2026','Utilities','$19,740','Approved'],['ClearPay Processing','Jul 24, 2026','Merchant fees','$8,906','Opportunity']];return `<div class="table-wrap"><table id="transactionsTable"><thead><tr><th>Vendor</th><th>Date</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`<tr class="transaction-row">${r.map((x,i)=>`<td>${i===4?`<span class="table-status ${x==='Approved'?'success':x==='Opportunity'?'warning':'review'}">${x}</span>`:x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+function historyTable(){return `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Source</th><th>Records</th><th>Status</th><th>Imported by</th></tr></thead><tbody>${[['Jul 28, 2026','Operating Account.csv','4,281'],['Jul 27, 2026','Corporate Visa.xlsx','1,943'],['Jul 25, 2026','QuickBooks Q2','3,618'],['Jul 18, 2026','Payroll Export.csv','824'],['Jul 11, 2026','Fleet Card.csv','702']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="table-status success">Complete</span></td><td>Brian Hess</td></tr>`).join('')}</tbody></table></div>`}
+function billingTable(){return `<div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${[['INV-2026-007','Jul 29, 2026'],['INV-2026-006','Jun 29, 2026'],['INV-2026-005','May 29, 2026']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>$299.00</td><td><span class="table-status success">Paid</span></td><td><button class="table-link billing-action" data-billing="Download ${r[0]}">Download</button></td></tr>`).join('')}</tbody></table></div>`}
+
+
 const replies = {
   'Explain the top priority': 'Commercial insurance is ranked first because premiums are 18% above comparable manufacturers, no competitive rebid has occurred in 31 months, and two policy riders appear to overlap. Estimated annual savings: $18,300.',
   'Show all savings': 'Atlas identified four savings opportunities totaling $46,100 annually: commercial insurance ($18,300), merchant processing ($14,800), software consolidation ($7,900), and freight optimization ($5,100).',
@@ -120,7 +170,7 @@ const replies = {
   'What changed since yesterday?': 'Since yesterday, merchant processing fees increased 0.4%, cash on hand improved by $38,200, one new freight savings opportunity was identified, and no new liquidity risk was detected.'
 };
 
-const MEMORY_KEY='atlasNaturalConversation21_2_1';
+const MEMORY_KEY='atlasNaturalConversation21_2_2_recovery';
 const conversationState={topic:'general',entity:'business overview',lastIntent:'overview',lastAnswer:'',recommendation:'Review the highest-impact savings opportunity first.'};
 
 function loadMemory(){
@@ -341,7 +391,7 @@ function renderFollowUps(prompt){
   row.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
 }
 
-const COPILOT_STORAGE_KEY='atlasCopilotConversation21_2_1';
+const COPILOT_STORAGE_KEY='atlasCopilotConversation21_2_2_recovery';
 const defaultCopilotMessage='I completed your executive review. Since your last login, I found four changes: insurance remains the largest savings opportunity, a new $5,100 freight opportunity appeared, cash improved by $38,200, and one vendor invoice needs review. Which should we examine first?';
 
 function escapeMessage(text){return String(text).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -394,7 +444,30 @@ function bindDashboard(){
   document.querySelector('#reviewChangesBtn')?.addEventListener('click',()=>answer('What changed since yesterday?'));
   document.querySelector('#askBtn')?.addEventListener('click',()=>{document.querySelector('#atlasPanel').scrollIntoView({behavior:'smooth',block:'start'});document.querySelector('#chatInput').focus()});
   document.querySelector('#briefBtn')?.addEventListener('click',()=>openModal('Tonight’s Executive Brief',`<div class="brief-grid"><article><span>Financial health</span><strong>92</strong><small>Healthy</small></article><article><span>Annual savings</span><strong>$46,100</strong><small>4 opportunities</small></article><article><span>Top priority</span><strong>Insurance review</strong><small>$18,300 potential</small></article></div><p>Atlas recommends beginning the commercial insurance review first, followed by merchant processing. Cash flow remains healthy and no immediate liquidity risk was detected.</p>`));
-  document.querySelectorAll('.priority-row').forEach(row=>row.addEventListener('click',()=>openPriorityDestination(Number(row.dataset.priority))));
+  document.querySelectorAll('.priority-row').forEach(row=>row.addEventListener('click',()=>navigatePriority(Number(row.dataset.priority))));
+}
+
+
+function focusTransaction(searchTerm, category='All categories'){
+  showPage('Transactions');
+  requestAnimationFrame(()=>{
+    const search=document.querySelector('#transactionSearch');
+    const filter=document.querySelector('#transactionFilter');
+    if(search){search.value=searchTerm||'';search.dispatchEvent(new Event('input',{bubbles:true}));}
+    if(filter && category){filter.value=category;filter.dispatchEvent(new Event('change',{bubbles:true}));}
+    document.querySelector('#transactionsTable')?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+
+function navigatePriority(index){
+  const routes={
+    0:()=>focusTransaction('Harbor Mutual','Insurance'),
+    1:()=>focusTransaction('ClearPay','All categories'),
+    2:()=>focusTransaction('Northstar','Software'),
+    3:()=>{showPage('Dashboard');setTimeout(()=>{document.querySelector('#atlasPanel')?.scrollIntoView({behavior:'smooth',block:'start'});answer('Explain the cash flow improvement')},80)},
+    4:()=>focusTransaction('Midwest Freight','Freight')
+  };
+  (routes[index]||routes[0])();
 }
 
 function showPage(name){
@@ -423,7 +496,7 @@ function exportTransactionsCSV(){
 }
 
 function invoiceHTML(invoice='INV-2026-008', date='August 29, 2026'){
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 21.2.2.</p></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${invoice}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:48px auto;color:#172235}header{display:flex;justify-content:space-between;border-bottom:2px solid #caa85e;padding-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#687386}.box{margin-top:32px;padding:24px;background:#f5f7fa;border-radius:12px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #dce2ea}.total{font-size:24px;font-weight:800}.paid{color:#19764d;font-weight:700}</style></head><body><header><div><div class="brand">ATLAS AI</div><div class="muted">SmartLedger</div></div><div><strong>INVOICE</strong><div>${invoice}</div></div></header><div class="box"><div><strong>Bill to</strong><p>Atlas Manufacturing Group<br>Demo Workspace</p></div><div class="line"><span>Professional Plan — monthly subscription</span><span>$299.00</span></div><div class="line"><span>Invoice date</span><span>${date}</span></div><div class="line total"><span>Total</span><span>$299.00</span></div><p class="paid">Paid / scheduled by Visa ending 4321</p></div><p class="muted">This is a demonstration invoice generated by Atlas AI Build 21.2.2 Recovery.</p></body></html>`;
 }
 
 function handleBillingAction(action){
@@ -491,106 +564,86 @@ function bindFunctionalPage(name){
   document.querySelectorAll('.settings-action').forEach(b=>b.addEventListener('click',()=>toast(`${b.textContent} opened`)));
 }
 
-function restoreWorkspace(){
-  sessionStorage.setItem('atlasSession',JSON.stringify({name:'Brian Hess',role:'Owner',company:'Atlas Manufacturing Group',signedInAt:new Date().toISOString()}));
-  location.reload();
-}
-
-function renderAccountSignIn(){
-  const card=document.querySelector('.signin-card');
-  if(!card)return;
-  card.innerHTML=`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>Sign in</h1><p>Use the founder demo credentials below or an account created during customer onboarding.</p><label class="signin-label">Email<input id="signinEmail" type="email" autocomplete="email" value="demo@atlasaiusa.com" placeholder="you@company.com"></label><label class="signin-label">Password<input id="signinPassword" type="password" autocomplete="current-password" value="AtlasDemo!2026" placeholder="••••••••"></label><div id="signinMessage" class="signin-message" aria-live="polite"></div><button class="gold" id="signinSubmit">Sign in</button><button class="outline" id="backChoice">Back</button><small>Founder demo: demo@atlasaiusa.com / AtlasDemo!2026</small>`;
-  document.querySelector('#signinSubmit')?.addEventListener('click',()=>{
-    const email=document.querySelector('#signinEmail')?.value.trim().toLowerCase();
-    const password=document.querySelector('#signinPassword')?.value;
-    const message=document.querySelector('#signinMessage');
-    if(email==='demo@atlasaiusa.com'&&password==='AtlasDemo!2026'){
-      if(message){message.textContent='Credentials accepted. Opening your workspace…';message.className='signin-message success';}
-      setTimeout(restoreWorkspace,250);
-    }else{
-      if(message){message.textContent='Email or password was not recognized. Use the founder demo credentials shown below.';message.className='signin-message error';}
-    }
-  });
-  document.querySelector('#backChoice')?.addEventListener('click',renderSignedOutChoice);
-}
-
-function renderSignedOutChoice(){
-  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Release 21.2.2 · Secure session cleared</small></section></div>`;
-  document.querySelector('#demoEntry')?.addEventListener('click',restoreWorkspace);
-  document.querySelector('#accountEntry')?.addEventListener('click',renderAccountSignIn);
-}
-
-let inactivityTimer;
-let warningTimer;
-let warningOpen=false;
+const USER_STORE_KEY='atlasLocalDemoUsers';
+const SESSION_KEY='atlasSession';
+let inactivityTimer=null;
+let warningTimer=null;
 const INACTIVITY_LIMIT=5*60*1000;
 const WARNING_AT=4*60*1000;
 
-function closeSessionWarning(){
-  warningOpen=false;
-  const modal=document.querySelector('#modal');
-  if(modal?.classList.contains('open')&&document.querySelector('#modalEyebrow')?.textContent==='SESSION SECURITY') modal.classList.remove('open');
+function getLocalUsers(){
+  try{return JSON.parse(localStorage.getItem(USER_STORE_KEY)||'{}')}catch{return {}}
+}
+function saveLocalUsers(users){localStorage.setItem(USER_STORE_KEY,JSON.stringify(users));}
+function setSession(email,mode='customer'){
+  sessionStorage.setItem(SESSION_KEY,JSON.stringify({email,mode,signedInAt:Date.now()}));
+  localStorage.removeItem('atlasRequireAuth');
+}
+function showAuthMessage(message,type='error'){
+  const el=document.querySelector('#signinMessage');
+  if(el){el.textContent=message;el.className=`signin-message ${type}`;}
+}
+function authShell(content){
+  app.innerHTML=`<div class="signed-out"><section class="signin-card">${content}</section></div>`;
+}
+function showSignedOut(reason=''){
+  authShell(`<span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>${reason||'Choose how you would like to enter Atlas AI. Demo mode will never open automatically.'}</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in or create account</button><small>Release 21.2.2 Recovery · Secure session cleared</small>`);
+  document.querySelector('#demoEntry')?.addEventListener('click',()=>{setSession('demo@atlasaiusa.com','demo');location.reload()});
+  document.querySelector('#accountEntry')?.addEventListener('click',showAccountAccess);
+}
+function showAccountAccess(mode='signin'){
+  const create=mode==='create';
+  authShell(`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>${create?'Create an account':'Sign in'}</h1><p>${create?'Create a local test account for this browser.':'Use the founder demo credentials or an account created here.'}</p>${create?'<label class="signin-label">Name<input id="signinName" autocomplete="name" placeholder="Your name"></label>':''}<label class="signin-label">Email<input id="signinEmail" type="email" autocomplete="email" value="${create?'':'demo@atlasaiusa.com'}" placeholder="you@company.com"></label><label class="signin-label">Password<input id="signinPassword" type="password" autocomplete="${create?'new-password':'current-password'}" value="${create?'':'AtlasDemo!2026'}" placeholder="At least 8 characters"></label><div id="signinMessage" class="signin-message" aria-live="polite"></div><button class="gold" id="signinSubmit">${create?'Create account':'Sign in'}</button><button class="outline" id="switchAuth">${create?'Already have an account? Sign in':'New user? Create account'}</button><button class="outline" id="backChoice">Back</button><small>Founder demo: demo@atlasaiusa.com / AtlasDemo!2026</small>`);
+  document.querySelector('#switchAuth')?.addEventListener('click',()=>showAccountAccess(create?'signin':'create'));
+  document.querySelector('#backChoice')?.addEventListener('click',()=>showSignedOut());
+  document.querySelector('#signinSubmit')?.addEventListener('click',()=>{
+    const email=(document.querySelector('#signinEmail')?.value||'').trim().toLowerCase();
+    const password=document.querySelector('#signinPassword')?.value||'';
+    if(!email.includes('@')) return showAuthMessage('Enter a valid email address.');
+    if(password.length<8) return showAuthMessage('Password must contain at least 8 characters.');
+    if(create){
+      const name=(document.querySelector('#signinName')?.value||'').trim();
+      if(!name) return showAuthMessage('Enter your name.');
+      const users=getLocalUsers();
+      if(users[email]) return showAuthMessage('An account with this email already exists.');
+      users[email]={name,password,createdAt:new Date().toISOString()};
+      saveLocalUsers(users);setSession(email,'customer');showAuthMessage('Account created. Opening SmartLedger…','success');setTimeout(()=>location.reload(),500);return;
+    }
+    const demoOk=email==='demo@atlasaiusa.com'&&password==='AtlasDemo!2026';
+    const user=getLocalUsers()[email];
+    if(!demoOk && (!user||user.password!==password)) return showAuthMessage('Email or password is incorrect.');
+    setSession(email,demoOk?'demo':'customer');showAuthMessage('Sign-in successful. Opening SmartLedger…','success');setTimeout(()=>location.reload(),350);
+  });
+}
+function signOut(reason=''){
+  clearTimeout(inactivityTimer);clearTimeout(warningTimer);
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.setItem('atlasRequireAuth','1');
+  showSignedOut(reason);
 }
 function resetInactivityTimer(){
-  if(!sessionStorage.getItem('atlasSession')) return;
   clearTimeout(inactivityTimer);clearTimeout(warningTimer);
-  if(warningOpen) closeSessionWarning();
-  warningTimer=setTimeout(showSessionWarning,WARNING_AT);
+  warningTimer=setTimeout(()=>{
+    openModal('Session expiring soon','<p>For your security, SmartLedger will sign out in 60 seconds because no activity was detected.</p><button class="gold modal-action" id="staySignedIn">Stay signed in</button>','SECURITY NOTICE');
+    setTimeout(()=>document.querySelector('#staySignedIn')?.addEventListener('click',()=>{document.querySelector('#modal')?.classList.remove('open');resetInactivityTimer();toast('Session extended')}),0);
+  },WARNING_AT);
   inactivityTimer=setTimeout(()=>signOut('Your session expired after five minutes of inactivity.'),INACTIVITY_LIMIT);
 }
-function showSessionWarning(){
-  warningOpen=true;
-  openModal('Your session will expire in 60 seconds',`<p>For your security, SmartLedger signs out after five minutes without activity.</p><button class="gold modal-action" id="staySignedIn">Stay signed in</button>`,'SESSION SECURITY');
-  setTimeout(()=>document.querySelector('#staySignedIn')?.addEventListener('click',()=>{closeSessionWarning();resetInactivityTimer();toast('Session extended')}),0);
-}
-function startSessionSecurity(){
-  if(!sessionStorage.getItem('atlasSession')) sessionStorage.setItem('atlasSession',JSON.stringify({name:'Brian Hess',role:'Owner',company:'Atlas Manufacturing Group',signedInAt:new Date().toISOString()}));
-  ['click','keydown','mousemove','touchstart','scroll'].forEach(event=>window.addEventListener(event,resetInactivityTimer,{passive:true}));
+function startInactivityTracking(){
+  ['click','keydown','mousemove','touchstart','scroll'].forEach(evt=>window.addEventListener(evt,resetInactivityTimer,{passive:true}));
   resetInactivityTimer();
 }
 
-function signOut(reason='Secure session cleared.'){
-  clearTimeout(inactivityTimer);clearTimeout(warningTimer);
-  sessionStorage.removeItem('atlasSession');
-  renderSignedOutChoice();
-  const card=document.querySelector('.signin-card');
-  if(card&&reason!=='Secure session cleared.'){
-    const note=document.createElement('p');note.className='signin-message';note.textContent=reason;card.insertBefore(note,card.querySelector('button'));
-  }
-}
-
-const priorityRoutes=[
-  {page:'Transactions',query:'insurance',prompt:'Explain the commercial insurance opportunity'},
-  {page:'Transactions',query:'merchant',prompt:'Explain merchant processing fees'},
-  {page:'Transactions',query:'software',prompt:'Explain overlapping software costs'},
-  {page:'Dashboard',query:'',prompt:'Explain cash flow'},
-  {page:'Transactions',query:'freight',prompt:'Explain the freight savings opportunity'}
-];
-function openPriorityDestination(index){
-  const route=priorityRoutes[index]||priorityRoutes[0];
-  const item=priorities[index]||priorities[0];
-  showPage(route.page);
-  setTimeout(()=>{
-    if(route.page==='Transactions'){
-      const search=document.querySelector('#transactionSearch');
-      if(search){search.value=route.query;search.dispatchEvent(new Event('input',{bubbles:true}));search.scrollIntoView({behavior:'smooth',block:'center'});}
-      toast(`${item.title} records opened`);
-    }else{
-      document.querySelector('#atlasPanel')?.scrollIntoView({behavior:'smooth',block:'start'});
-      answer(route.prompt);
-    }
-  },80);
-}
-
-function bindGlobalControls(){
-  document.querySelectorAll('.nav-item[data-nav]').forEach(button=>button.addEventListener('click',()=>showPage(button.dataset.nav)));
-  document.querySelector('.signout')?.addEventListener('click',()=>signOut());
-  document.querySelector('#reloadBtn')?.addEventListener('click',()=>{if(document.querySelector('.count'))animateCounts();toast('Demo data reloaded')});
-  document.querySelector('#presentationBtn')?.addEventListener('click',()=>{document.body.classList.toggle('presentation');toast(document.body.classList.contains('presentation')?'Presentation mode on':'Presentation mode off')});
-  document.querySelector('#modalClose')?.addEventListener('click',()=>document.querySelector('#modal')?.classList.remove('open'));
-  document.querySelector('#modal')?.addEventListener('click',e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('open')});
-}
-
 bindDashboard();
-bindGlobalControls();
-startSessionSecurity();
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.nav)));
+document.querySelector('.signout')?.addEventListener('click',()=>signOut());
+document.querySelector('#reloadBtn')?.addEventListener('click',()=>{if(document.querySelector('.count'))animateCounts();toast('Demo data reloaded')});
+document.querySelector('#presentationBtn')?.addEventListener('click',()=>{document.body.classList.toggle('presentation');toast(document.body.classList.contains('presentation')?'Presentation mode on':'Presentation mode off')});
+document.querySelector('#modalClose')?.addEventListener('click',()=>document.querySelector('#modal').classList.remove('open'));
+document.querySelector('#modal')?.addEventListener('click',e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('open')});
+
+if(localStorage.getItem('atlasRequireAuth')==='1' && !sessionStorage.getItem(SESSION_KEY)){
+  showSignedOut();
+}else{
+  startInactivityTracking();
+}

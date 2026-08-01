@@ -12,4 +12,4 @@
 
 .copilot-status{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.memory-pill{font-size:10px;font-weight:800;letter-spacing:.08em;color:#7ee2b8;background:rgba(41,173,116,.12);border:1px solid rgba(66,211,145,.25);border-radius:999px;padding:7px 9px}.chat .message p{line-height:1.55;white-space:normal}
 
-.signin-message{margin:10px 0;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.06);font-size:13px;line-height:1.4}.signin-message.error{border:1px solid rgba(239,68,68,.45);color:#fecaca;background:rgba(127,29,29,.28)}.signin-message.success{border:1px solid rgba(34,197,94,.45);color:#bbf7d0;background:rgba(20,83,45,.28)}
+.signin-message{min-height:22px;margin:8px 0;font-size:13px;font-weight:700;color:#ef9a9a}.signin-message.success{color:#72d8a4}.signin-message.error{color:#ef9a9a}
