@@ -1,0 +1,10 @@
+SPRINT 24.2 ROOT PATCH
+
+Upload these four files directly to the TOP LEVEL of the existing GitHub repository:
+- index.html
+- atlas24-2.js
+- supabase.js
+- style.css
+
+Replace files when asked, then commit changes.
+This patch deliberately bypasses the old src/main.js file that remained on Sprint 24.1.
