@@ -1,6 +1,6 @@
 {
-  "name": "atlas-ai-22-0-1-navigation-repair",
-  "version": "22.0.1",
+  "name": "atlas-ai-22-0-2-import-action-repair",
+  "version": "22.0.2",
   "private": true,
   "type": "module",
   "scripts": {
