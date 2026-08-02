@@ -79,7 +79,7 @@ function renderOnboarding(account){
   document.querySelector('#onboardingNext').onclick=()=>{if(state.onboardingStep<3){state.onboardingStep++;renderOnboarding(account)}else{state.view=startView;localStorage.removeItem('atlas-pending-account');setSession({name:account.name,email:account.email,role:'Owner',company:account.company})}};
 }
 function navItem(view,icon,label){return `<button type="button" class="nav-item ${state.view===view?'active':''}" data-view="${view}" aria-current="${state.view===view?'page':'false'}"><span aria-hidden="true">${icon}</span>${label}</button>`}
-function renderApp(){const company=companies.find(c=>c.id===state.company)||companies[0];app.innerHTML=`<div class="app-shell ${state.presentation?'presentation-mode':''}"><aside class="sidebar" id="sidebar"><div class="brand-lockup sidebar-brand"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div><nav class="side-nav">${navItem('dashboard','⌂','Dashboard')}${navItem('imports','⇧','Financial Imports')}${navItem('transactions','≡','Transactions')}${navItem('history','◷','Import History')}${navItem('settings','⚙','Settings')}</nav><div class="security-card"><span>◈</span><div><strong>Private processing</strong><small>Files remain in your browser</small></div></div><button id="logout" class="logout">↪ Sign out</button></aside><main class="main-area"><header class="topbar"><button class="menu" id="menu">☰</button><div class="company-select-wrap"><small>CURRENT WORKSPACE</small><select id="companySelect">${companies.map(c=>`<option value="${c.id}" ${c.id===company.id?'selected':''}>${c.name}</option>`).join('')}</select></div><div class="top-actions"><button type="button" class="presentation-toggle" data-action="presentation">${state.presentation?'Exit presentation':'Presentation mode'}</button><span class="sprint-chip">ATLAS 21.1</span><div class="user-chip"><span>${initials(state.user.name)}</span><div><strong>${state.user.name}</strong><small>${company.role}</small></div></div></div></header>${isDemoWorkspace()?`<div class="demo-workspace-banner"><div><span>LIVE DEMO WORKSPACE</span><strong>${demoProfile.company}</strong><small>Fictional but internally consistent manufacturing data · ${demoProfile.annualTransactions.toLocaleString('en-US')} transactions</small></div><button type="button" class="demo-button fit" data-action="reset-demo">Reload demo data</button></div>`:''}<section id="content"></section></main></div><dialog id="ceoReportDialog" class="report-dialog"><article><button type="button" class="dialog-close" data-close-report aria-label="Close CEO report">×</button><span class="eyebrow">CEO EXECUTIVE BRIEF</span><h2>Financial position and recommended actions</h2><div class="report-summary"><div><small>CASH POSITION</small><strong>$2,840,000</strong><span>Healthy</span></div><div><small>PROJECTED ANNUAL SAVINGS</small><strong>$46,100</strong><span>4 executive priorities</span></div><div><small>30-DAY OUTLOOK</small><strong>$2,510,000</strong><span>Low risk</span></div></div><section class="report-section"><h3>What deserves attention</h3><p>Commercial insurance and merchant-processing fees are the two largest near-term savings opportunities. Steel and freight inflation remain the most important operating risks.</p></section><section class="report-section"><h3>Recommended next actions</h3><ol><li>Request competitive insurance quotes.</li><li>Renegotiate merchant-processing terms.</li><li>Review steel purchase commitments and freight contracts.</li></ol></section></article></dialog><dialog id="intelligenceDialog" class="report-dialog intelligence-dialog"><article><button type="button" class="dialog-close" data-close-intelligence aria-label="Close Atlas explanation">×</button><span class="eyebrow">ATLAS INVESTIGATION MODE</span><h2 id="intelligenceTitle">Executive investigation</h2><div id="intelligenceBody"></div></article></dialog><div id="toast" class="toast"></div>`;bindShell();renderView()}
+function renderApp(){const company=companies.find(c=>c.id===state.company)||companies[0];app.innerHTML=`<div class="app-shell ${state.presentation?'presentation-mode':''}"><aside class="sidebar" id="sidebar"><div class="brand-lockup sidebar-brand"><span class="brand-mark">A</span><div><strong>ATLAS AI</strong><small>SMARTLEDGER</small></div></div><nav class="side-nav">${navItem('dashboard','⌂','Dashboard')}${navItem('imports','⇧','Financial Imports')}${navItem('transactions','≡','Transactions')}${navItem('history','◷','Import History')}${navItem('settings','⚙','Settings')}</nav><div class="security-card"><span>◈</span><div><strong>Private processing</strong><small>Files remain in your browser</small></div></div><button id="logout" class="logout">↪ Sign out</button></aside><main class="main-area"><header class="topbar"><button class="menu" id="menu">☰</button><div class="company-select-wrap"><small>CURRENT WORKSPACE</small><select id="companySelect">${companies.map(c=>`<option value="${c.id}" ${c.id===company.id?'selected':''}>${c.name}</option>`).join('')}</select></div><div class="top-actions"><button type="button" class="presentation-toggle" data-action="presentation">${state.presentation?'Exit presentation':'Presentation mode'}</button><span class="sprint-chip">ATLAS 24.2</span><div class="user-chip"><span>${initials(state.user.name)}</span><div><strong>${state.user.name}</strong><small>${company.role}</small></div></div></div></header>${isDemoWorkspace()?`<div class="demo-workspace-banner"><div><span>LIVE DEMO WORKSPACE</span><strong>${demoProfile.company}</strong><small>Fictional but internally consistent manufacturing data · ${demoProfile.annualTransactions.toLocaleString('en-US')} transactions</small></div><button type="button" class="demo-button fit" data-action="reset-demo">Reload demo data</button></div>`:''}<section id="content"></section></main></div><dialog id="ceoReportDialog" class="report-dialog"><article><button type="button" class="dialog-close" data-close-report aria-label="Close CEO report">×</button><span class="eyebrow">CEO EXECUTIVE BRIEF</span><h2>Financial position and recommended actions</h2><div class="report-summary"><div><small>CASH POSITION</small><strong>$2,840,000</strong><span>Healthy</span></div><div><small>PROJECTED ANNUAL SAVINGS</small><strong>$46,100</strong><span>4 executive priorities</span></div><div><small>30-DAY OUTLOOK</small><strong>$2,510,000</strong><span>Low risk</span></div></div><section class="report-section"><h3>What deserves attention</h3><p>Commercial insurance and merchant-processing fees are the two largest near-term savings opportunities. Steel and freight inflation remain the most important operating risks.</p></section><section class="report-section"><h3>Recommended next actions</h3><ol><li>Request competitive insurance quotes.</li><li>Renegotiate merchant-processing terms.</li><li>Review steel purchase commitments and freight contracts.</li></ol></section></article></dialog><dialog id="intelligenceDialog" class="report-dialog intelligence-dialog"><article><button type="button" class="dialog-close" data-close-intelligence aria-label="Close Atlas explanation">×</button><span class="eyebrow">ATLAS INVESTIGATION MODE</span><h2 id="intelligenceTitle">Executive investigation</h2><div id="intelligenceBody"></div></article></dialog><div id="toast" class="toast"></div>`;bindShell();renderView()}
 function bindShell(){document.querySelector('[data-action="presentation"]')?.addEventListener('click',()=>action('presentation'));document.querySelector('[data-action="reset-demo"]')?.addEventListener('click',()=>{seedDemoWorkspace(true);localStorage.removeItem('atlas-conversation');renderApp();toast('Demo company reloaded')});document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>navigate(b.dataset.view));document.querySelector('#companySelect').onchange=e=>{state.company=e.target.value;localStorage.setItem('atlas-company',state.company);if(isDemoWorkspace())seedDemoWorkspace();else localStorage.setItem('atlas-demo-mode','false');state.view='dashboard';renderApp()};document.querySelector('#logout').onclick=async()=>{if(supabaseEnabled)await supabase.auth.signOut();localStorage.removeItem('atlas-user');state.user=null;authScreen()};document.querySelector('#menu').onclick=()=>document.querySelector('#sidebar').classList.toggle('open');window.onhashchange=()=>{const next=location.hash.slice(1);if(allowedViews.includes(next)&&next!==state.view){state.view=next;renderApp()}};document.addEventListener('keydown',handleGlobalKeydown,{once:true})}
 function navigate(view){if(!allowedViews.includes(view))return;state.view=view;location.hash=view;renderApp()}
 function handleGlobalKeydown(e){if(e.key==='Escape'){document.querySelector('#sidebar')?.classList.remove('open');document.querySelector('#ceoReportDialog')?.close()}document.addEventListener('keydown',handleGlobalKeydown,{once:true})}
@@ -95,79 +95,63 @@ function getAtlasMemory(){try{return JSON.parse(localStorage.getItem('atlas-conv
 function saveAtlasMemory(memory){localStorage.setItem('atlas-conversation-memory',JSON.stringify({...memory,updatedAt:new Date().toISOString()}))}
 function detectAtlasIntent(question){
   const q=String(question||'').toLowerCase();
-  if(q.includes('news')||q.includes('industry')||q.includes('outside'))return 'industry';
-  if(q.includes('forecast')||q.includes('next quarter'))return 'forecast';
-  if(q.includes('insurance')||q.includes('carrier')||q.includes('premium'))return 'insurance';
-  if(q.includes('save')||q.includes('opportun')||q.includes('priority'))return 'savings';
-  if(q.includes('biggest')||q.includes('largest expense')||q.includes('top vendor')||q.includes('vendor'))return 'vendors';
-  if(q.includes('duplicate'))return 'duplicates';
-  if(q.includes('cash'))return 'cash';
-  if(q.includes('software')||q.includes('subscription'))return 'subscriptions';
-  if(q.includes('summary')||q.includes('brief')||q.includes('changed')||q.includes('today'))return 'summary';
-  return 'general';
+  const domains={
+    industry:['news','industry','outside','market','economy','regulation'],forecast:['forecast','next quarter','future','outlook','project'],
+    insurance:['insurance','carrier','premium','policy','renewal','broker'],savings:['save','saving','opportunity','priority','reduce','cut','waste'],
+    vendors:['vendor','supplier','merchant','biggest','largest expense','spend'],duplicates:['duplicate','double','twice'],cash:['cash','liquidity','balance'],
+    subscriptions:['software','subscription','license','seat','saas'],summary:['summary','brief','changed','today','yesterday','overview'],
+    payroll:['payroll','salary','overtime','labor','employee'],freight:['freight','shipping','carrier cost'],steel:['steel','material','raw material']
+  };
+  let best=['general',0];
+  Object.entries(domains).forEach(([intent,terms])=>{const score=terms.reduce((n,t)=>n+(q.includes(t)?1:0),0);if(score>best[1])best=[intent,score]});
+  return best[0];
 }
 function resolveAtlasQuestion(question){
   const raw=String(question||'').trim();
-  const q=raw.toLowerCase();
   const memory=getAtlasMemory();
-  const followUp=/^(why|how|show me|tell me more|explain|what next|what should i do|and|compare|which one|how much|when)\b/.test(q)||q.split(/\s+/).length<=3;
-  if(followUp&&memory.lastIntent&&memory.lastIntent!=='general')return `${memory.lastIntent} ${raw}`;
-  return raw;
+  const recent=getAtlasConversation().slice(-8).map(m=>`${m.role}: ${m.text}`).join('\n');
+  return {raw,topic:detectAtlasIntent(raw)!=='general'?detectAtlasIntent(raw):(memory.activeTopic||memory.lastIntent||'general'),recent};
 }
-function atlasResponse(question,brief,transactions){
-  const demoMode=localStorage.getItem('atlas-demo-mode')==='true';
-  const resolvedQuestion=resolveAtlasQuestion(question);
-  const q=resolvedQuestion.toLowerCase();
-
-  if(demoMode && (q.includes('news')||q.includes('industry')||q.includes('outside'))){
-    return `Two external developments deserve attention. Specialty steel prices moved higher, which may pressure Q4 margins, and a proposed freight rule may raise regional carrier costs. I recommend reviewing steel purchase commitments first because raw materials represent 31% of modeled direct-material spending.`;
-  }
-  if(demoMode && (q.includes('forecast')||q.includes('next quarter'))){
-    return `The demo forecast remains healthy for the next 90 days. Cash is projected to remain above $2.5 million, but steel and freight inflation could reduce operating margin by about 0.8 points unless purchasing actions are taken.`;
-  }
-  if(demoMode && (q.includes('insurance')||q.includes('carrier')||q.includes('premium'))){
-    if(q.includes('why')||q.includes('explain')) return `Commercial insurance is the top priority because the modeled renewal is 11% above the prior term. Atlas estimates that competitive carrier quotes and coverage normalization could save about $18,700 annually.`;
-    if(q.includes('compare')||q.includes('which')) return `Atlas recommends comparing at least three carriers on total premium, deductible structure, exclusions, claims support, and multi-policy discounts. The lowest quote is not automatically the best risk-adjusted option.`;
-    if(q.includes('next')||q.includes('do')) return `Next step: ask the broker for a loss-run report and three comparable quotes using the same coverage limits. Atlas can then rank the options by cost and coverage quality.`;
-    return `Commercial insurance is the highest-impact opportunity today, with estimated annual savings of $18,700 and a recommended broker review before renewal.`;
-  }
-  if(demoMode && q.includes('why') && q.includes('expense')){
-    return `Expenses increased primarily because specialty steel costs rose 14%, regional freight increased 7%, and overtime labor ran 18% above plan during a production surge. Steel is the largest controllable driver.`;
-  }
+function buildAtlasContext(brief,transactions){
   const expenses=transactions.filter(tx=>Number(tx.amount)<0);
-  const byVendor=new Map();
-  const byCategory=new Map();
-  expenses.forEach(tx=>{
-    const amount=Math.abs(Number(tx.amount)||0);
-    const vendor=tx.vendor||tx.description||'Unknown vendor';
-    const category=tx.category||'Uncategorized';
-    byVendor.set(vendor,(byVendor.get(vendor)||0)+amount);
-    byCategory.set(category,(byCategory.get(category)||0)+amount);
-  });
-  const topVendor=[...byVendor.entries()].sort((a,b)=>b[1]-a[1])[0];
-  const topCategory=[...byCategory.entries()].sort((a,b)=>b[1]-a[1])[0];
-  if(!transactions.length){
-    if(q.includes('save')||q.includes('opportun')) return 'I can begin with a preliminary review, but I need transaction data to give you company-specific savings recommendations. Import a recent bank or card CSV and ask me again.';
-    return 'I am ready to help. Import a recent bank or card CSV so I can answer from your company’s actual transactions instead of demo assumptions.';
+  const totalExpenses=expenses.reduce((sum,tx)=>sum+Math.abs(Number(tx.amount)||0),0);
+  const byVendor={};const byCategory={};
+  expenses.forEach(tx=>{const amount=Math.abs(Number(tx.amount)||0);const vendor=tx.vendor||tx.description||'Unknown vendor';const category=tx.category||'Uncategorized';byVendor[vendor]=(byVendor[vendor]||0)+amount;byCategory[category]=(byCategory[category]||0)+amount});
+  const topVendors=Object.entries(byVendor).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const topCategories=Object.entries(byCategory).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  return {company:isDemoWorkspace()?demoProfile.company:(state.user?.company||'Customer company'),demoMode:isDemoWorkspace(),brief:{summary:brief?.summary,healthScore:brief?.healthScore,cashStatus:brief?.cashStatus,annualSavings:brief?.annualSavings,transactionCount:brief?.transactionCount,nextAction:brief?.nextAction,priorities:(brief?.priorities||[]).map(x=>({id:x.id,title:x.title,impact:x.impact,confidence:x.confidence,why:x.why,nextStep:x.nextStep}))},financials:{totalExpenses,topVendors,topCategories},demoFacts:isDemoWorkspace()?{cashOnHand:2840000,projected30DayCash:2510000,revenue:demoProfile.revenue,employees:187,locations:3,savingsRealizedYTD:73860,softwareSeatsInactive:27,softwareAnnualOpportunity:7900,merchantFeeIncreasePercent:0.4,freightSavingsOpportunity:9200}:null};
+}
+async function callAtlasService(question,brief,transactions,messages){
+  const response=await fetch('/api/atlas-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,messages:messages.slice(-12),memory:getAtlasMemory(),context:buildAtlasContext(brief,transactions)})});
+  if(!response.ok)throw new Error(`Atlas service ${response.status}`);
+  const data=await response.json();
+  if(!data.answer)throw new Error('Atlas returned no answer');
+  return data;
+}
+function localConversationalResponse(question,brief,transactions){
+  const {raw,topic,recent}=resolveAtlasQuestion(question);const q=raw.toLowerCase();const context=buildAtlasContext(brief,transactions);const facts=context.demoFacts;
+  const lastAtlas=getAtlasConversation().slice().reverse().find(m=>m.role==='atlas')?.text||'';
+  const refersBack=/\b(it|this|that|these|those|them|they|each|one|ones|same|there)\b/i.test(raw)||q.split(/\s+/).length<6;
+  const active=topic==='general'&&refersBack?(getAtlasMemory().activeTopic||detectAtlasIntent(lastAtlas)):topic;
+  const moneyValue=n=>money.format(Number(n)||0);
+  if(active==='subscriptions'||/seat|license|software|subscription/.test(`${q} ${lastAtlas.toLowerCase()}`)){
+    if(/month|monthly|each month/.test(q))return `The 27 inactive software seats represent about ${moneyValue(facts.softwareAnnualOpportunity/12)} per month, based on the modeled ${moneyValue(facts.softwareAnnualOpportunity)} annual opportunity. That is the amount Atlas believes can likely be removed—not necessarily the company’s entire software bill.`;
+    if(/each|per seat|one seat/.test(q))return `The modeled avoidable cost averages about ${moneyValue(facts.softwareAnnualOpportunity/27/12)} per inactive seat each month. Actual seat prices will vary by vendor and plan.`;
+    if(/which|vendor|breakdown|who/.test(q))return `The current demo identifies 27 inactive or overlapping seats, but it does not yet contain a trustworthy vendor-by-vendor seat ledger. The responsible next step is to match the licenses to owners and renewal records before cancellation.`;
+    if(/cancel|remove|do next|what next|recommend/.test(q))return `Confirm the owner of each inactive seat, check contract and renewal dates, then cancel or reassign only the seats with no business owner. That protects access while pursuing the ${moneyValue(facts.softwareAnnualOpportunity)} annual opportunity.`;
+    return `Atlas found 27 paid software seats with no activity in the last 90 days. The modeled avoidable cost is ${moneyValue(facts.softwareAnnualOpportunity)} annually, or about ${moneyValue(facts.softwareAnnualOpportunity/12)} monthly.`;
   }
-  if(q.includes('save')||q.includes('opportun')||q.includes('priority')){
-    const items=brief.priorities.slice(0,3).map((item,index)=>`${index+1}. ${item.title} — about ${money.format(item.impact)} per year`).join('\n');
-    return `I found ${brief.priorities.length} priority opportunities with about ${money.format(brief.annualSavings)} in potential annual savings.\n\n${items}\n\nI would start with ${brief.nextAction?.title?.toLowerCase()||'the highest-impact item'}.`;
+  if(active==='insurance')return /next|do|how/.test(q)?`Ask the broker for the current loss-run report and three comparable quotes using identical coverage limits. Then compare premium, deductibles, exclusions, and claims support—not price alone.`:`Commercial insurance remains the highest-impact modeled opportunity at about ${moneyValue(18700)} annually because the renewal is 11% above the prior term.`;
+  if(active==='cash')return `Cash on hand is ${moneyValue(facts.cashOnHand)}, with a modeled 30-day balance of ${moneyValue(facts.projected30DayCash)}. Atlas currently classifies near-term liquidity risk as low.`;
+  if(active==='freight')return `Atlas identified about ${moneyValue(facts.freightSavingsOpportunity)} in annual freight savings. The best next step is to compare lane-level rates, accessorial charges, and minimum-volume commitments before renegotiating.`;
+  if(active==='savings')return `Atlas currently models ${moneyValue(brief.annualSavings)} in annual opportunities. The highest-impact action is ${brief.nextAction?.title||'reviewing the top ranked opportunity'}, followed by software-seat cleanup and merchant-fee review.`;
+  if(active==='vendors'){
+    const [vendor,amount]=context.financials.topVendors[0]||[];return vendor?`${vendor} is the largest vendor in the available transaction data at ${moneyValue(amount)}. I can also compare it with the next vendors or explain what drove the total.`:`I do not have enough vendor detail to rank spending yet.`;
   }
-  if(q.includes('biggest')||q.includes('largest expense')||q.includes('top vendor')){
-    return topVendor?`${topVendor[0]} is the largest vendor in the imported data at ${money.format(topVendor[1])}. ${topCategory?`Your largest expense category is ${topCategory[0]} at ${money.format(topCategory[1])}.`:''}`:'I could not identify a largest vendor from the current data.';
-  }
-  if(q.includes('duplicate')){
-    const duplicate=brief.priorities.find(item=>item.id==='duplicates');
-    return duplicate?`${duplicate.title}. The estimated duplicate value is ${money.format(duplicate.impact)}. ${duplicate.why}`:'I did not find matching date, vendor, and amount combinations in the current imported data.';
-  }
-  if(q.includes('cash')) return `Your current Atlas cash-flow status is ${brief.cashStatus.toLowerCase()}. I reviewed ${brief.transactionCount.toLocaleString('en-US')} transactions. A connected balance history will allow a more precise 30- and 90-day forecast.`;
-  if(q.includes('summary')||q.includes('brief')||q.includes('changed')||q.includes('today')) return `${brief.summary} Your financial health score is ${brief.healthScore}, and your next best action is ${brief.nextAction?.title||'to import more current financial data'}.`;
-  if(q.includes('software')||q.includes('subscription')){
-    const item=brief.priorities.find(priority=>priority.id==='subscriptions');
-    return item?`${item.title}. Atlas estimates ${money.format(item.impact)} in annual impact. ${item.why}`:'I do not see enough software-related activity in the current import to make a confident subscription recommendation.';
-  }
-  return `Based on ${brief.transactionCount.toLocaleString('en-US')} imported transactions, the most important issue I see is ${brief.nextAction?.title?.toLowerCase()||'improving the available data'}. Ask me about savings, duplicate payments, your largest expense, subscriptions, cash flow, or today’s summary.`;
+  if(active==='summary')return `Since the prior review, merchant-processing fees increased ${facts.merchantFeeIncreasePercent}%, cash improved to ${moneyValue(facts.cashOnHand)}, a ${moneyValue(facts.freightSavingsOpportunity)} freight opportunity was identified, and 27 inactive software seats remain the clearest immediate cleanup item.`;
+  if(/why/.test(q)&&lastAtlas)return `The main reason is financial impact combined with ease of action. Atlas ranks items higher when the records show recurring cost, a credible savings path, and a next step that can be verified before money or access is changed.`;
+  if(/what (do you mean|are you talking about)|explain/.test(q)&&lastAtlas)return `I’m referring to the subject in my previous answer. In this conversation, the active subject is ${String(getAtlasMemory().activeTopic||'the latest financial finding').replace(/_/g,' ')}. I’ll keep using that context until you change topics.`;
+  return `I read that as a question about ${active==='general'?'the current executive brief':active}. Based on the available company data, ${brief.nextAction?.title||'the top ranked financial action'} deserves attention first. You can ask naturally—for example, “why is that first,” “what would it save monthly,” or “what should we do next?”`;
 }
 function atlasChat(brief,transactions){
   const stored=getAtlasConversation();
@@ -175,20 +159,21 @@ function atlasChat(brief,transactions){
   const messages=stored.length?stored:[{role:'atlas',text:`Good morning, ${firstName}. I finished the overnight review. Commercial insurance is the highest-impact item today. What would you like to examine?`}];
   window.__atlasConversation=messages;
   window.__atlasTransactions=transactions;
-  const visibleMessages=messages.slice(-2);
-  return `<aside class="atlas-command" aria-label="Ask Atlas"><div class="atlas-command-head"><div class="atlas-orb" aria-hidden="true">A</div><div><small>ATLAS · EXECUTIVE COPILOT</small><h2>Ask Atlas</h2><p>Follow up on the brief without leaving your dashboard.</p></div><div class="atlas-chat-tools"><span class="ai-live">● MEMORY ON</span><button type="button" class="text-button" data-clear-chat>New conversation</button></div></div><div class="chat-messages" id="atlasMessages" aria-live="polite">${visibleMessages.map(message=>`<div class="chat-message ${message.role}"><span>${message.role==='atlas'?'A':'BH'}</span><p>${escapeHtml(message.text).replace(/\n/g,'<br>')}</p></div>`).join('')}</div><div class="suggested-prompts"><button type="button" data-prompt="Explain the top recommendation">Explain top priority</button><button type="button" data-prompt="Where can I save money?">Find savings</button><button type="button" data-prompt="What important industry news affects this business?">Industry watch</button></div><form id="atlasChatForm" class="atlas-chat-form"><label class="sr-only" for="atlasQuestion">Ask Atlas</label><input id="atlasQuestion" autocomplete="off" placeholder="Ask Atlas a question..." maxlength="300"><button type="submit" aria-label="Send question">Send <span aria-hidden="true">→</span></button></form><small class="chat-disclaimer">Demo answers are grounded in Atlas Manufacturing Group data.</small></aside>`;
+  const visibleMessages=messages.slice(-4);
+  const memory=getAtlasMemory();const engineLabel=memory.responseSource==='secure-ai'?'● SECURE AI':'● CONVERSATION READY';
+  return `<aside class="atlas-command" aria-label="Ask Atlas"><div class="atlas-command-head"><div class="atlas-orb" aria-hidden="true">A</div><div><small>ATLAS · EXECUTIVE COPILOT</small><h2>Ask Atlas</h2><p>Follow up on the brief without leaving your dashboard.</p></div><div class="atlas-chat-tools"><span class="ai-live">${engineLabel}</span><button type="button" class="text-button" data-clear-chat>New conversation</button></div></div><div class="chat-messages" id="atlasMessages" aria-live="polite">${visibleMessages.map(message=>`<div class="chat-message ${message.role}"><span>${message.role==='atlas'?'A':'BH'}</span><p>${escapeHtml(message.text).replace(/\n/g,'<br>')}</p></div>`).join('')}${window.__atlasThinking?'<div class="chat-message atlas atlas-thinking"><span>A</span><p>Atlas is reviewing the conversation and company context…</p></div>':''}</div><div class="suggested-prompts"><button type="button" data-prompt="Explain the top recommendation">Explain top priority</button><button type="button" data-prompt="Where can I save money?">Find savings</button><button type="button" data-prompt="What important industry news affects this business?">Industry watch</button></div><form id="atlasChatForm" class="atlas-chat-form"><label class="sr-only" for="atlasQuestion">Ask Atlas</label><input id="atlasQuestion" autocomplete="off" placeholder="Ask Atlas a question..." maxlength="300"><button type="submit" aria-label="Send question">Send <span aria-hidden="true">→</span></button></form><small class="chat-disclaimer">Answers use conversation history and available company data. Secure AI activates when the server key is configured.</small></aside>`;
 }
-function submitAtlasQuestion(question){
+async function submitAtlasQuestion(question){
   const clean=String(question||'').trim();if(!clean)return;
   const brief=window.__atlasBrief;const transactions=window.__atlasTransactions||[];
-  const messages=getAtlasConversation();
-  const resolved=resolveAtlasQuestion(clean);
-  const intent=detectAtlasIntent(resolved);
-  const answer=atlasResponse(clean,brief,transactions);
-  messages.push({role:'user',text:clean},{role:'atlas',text:answer});
-  saveAtlasConversation(messages);
-  saveAtlasMemory({lastIntent:intent,lastQuestion:clean,lastAnswer:answer,turnCount:(getAtlasMemory().turnCount||0)+1});
-  renderApp();
+  const messages=getAtlasConversation();messages.push({role:'user',text:clean});saveAtlasConversation(messages);
+  window.__atlasThinking=true;renderApp();
+  let answer;let source='local';
+  try{const result=await callAtlasService(clean,brief,transactions,messages);answer=result.answer;source='secure-ai'}catch(error){console.info('Using Atlas local intelligence fallback:',error.message);answer=localConversationalResponse(clean,brief,transactions)}
+  const updated=getAtlasConversation();updated.push({role:'atlas',text:answer});saveAtlasConversation(updated);
+  const detected=detectAtlasIntent(`${clean} ${answer}`);const previous=getAtlasMemory();
+  saveAtlasMemory({lastIntent:detected,lastQuestion:clean,lastAnswer:answer,activeTopic:detected==='general'?(previous.activeTopic||'executive brief'):detected,turnCount:(previous.turnCount||0)+1,responseSource:source});
+  window.__atlasThinking=false;renderApp();
   requestAnimationFrame(()=>{const box=document.querySelector('#atlasMessages');if(box)box.scrollTop=box.scrollHeight;document.querySelector('#atlasQuestion')?.focus()});
 }
 
@@ -209,8 +194,8 @@ function dashboard(){
   const firstName=(state.user?.name||'there').split(' ')[0];
   const metrics=`<section class="metric-ribbon"><article><small>ANNUAL REVENUE</small><strong>${demoMode?money.format(demoProfile.revenue):'—'}</strong><span>Healthy operating trend</span></article><article><small>CASH ON HAND</small><strong>${demoMode?'$2.84M':'—'}</strong><span>Low 90-day risk</span></article><article><small>ACTIVE VENDORS</small><strong>${demoMode?demoProfile.vendors:total.toLocaleString()}</strong><span>${demoMode?'Across 3 locations':'Imported activity'}</span></article><article><small>SAVINGS IDENTIFIED</small><strong>${money.format(brief.annualSavings)}</strong><span>${brief.priorities.length} ranked opportunities</span></article></section>`;
   const left=`<div class="workspace-main">${demoMode?overnightExecutiveBrief(brief):''}${metrics}<section class="panel executive-actions"><div class="panel-heading"><div><small>TODAY’S ACTION CENTER</small><h2>Decisions with the greatest financial impact</h2></div><span class="row-chip">RANKED BY ATLAS</span></div><div class="action-list">${priorityCards}</div></section><section class="panel business-pulse"><div class="panel-heading"><div><small>BUSINESS PULSE</small><h2>What the dashboard says at a glance</h2></div></div><div class="pulse-grid"><div><span>Revenue trend</span><strong>+8.2%</strong><small>Year over year</small></div><div><span>Operating margin</span><strong>21.4%</strong><small>Above plan</small></div><div><span>30-day cash</span><strong>$2.51M</strong><small>Projected balance</small></div><div><span>Savings realized</span><strong>$73,860</strong><small>Year to date</small></div></div></section>${demoMode?`<section class="panel executive-news"><div class="panel-heading"><div><small>INDUSTRY WATCH</small><h2>Only developments that may change a decision</h2></div><span class="row-chip">2 IMPORTANT</span></div><div class="news-grid">${news}</div><small class="industry-note">Fictional demonstration intelligence. Production results will use current, cited sources.</small></section>`:''}</div>`;
-  const title=`<div class="workspace-title-v3"><div><span class="eyebrow">ATLAS EXECUTIVE WORKSPACE · RELEASE 21.1</span><strong>${demoMode?demoProfile.company:'Good afternoon, '+escapeHtml(firstName)+'.'}</strong><span>${demoMode?'187 employees · 3 locations · 9,842 transactions':'Dashboard and Atlas, together.'}</span></div><button type="button" class="presentation-toggle" data-action="presentation">${state.presentation?'Exit presentation':'Presentation mode'}</button></div>`;
-  return `${title}<section class="workspace-layout-v2 release16-layout">${left}${atlasChat(brief,tx)}</section><footer class="release-footer"><span>Atlas SmartLedger · Release 21.1</span><span>Evidence-Based Executive Intelligence</span></footer>`;
+  const title=`<div class="workspace-title-v3"><div><span class="eyebrow">ATLAS EXECUTIVE WORKSPACE · RELEASE 24.2</span><strong>${demoMode?demoProfile.company:'Good afternoon, '+escapeHtml(firstName)+'.'}</strong><span>${demoMode?'187 employees · 3 locations · 9,842 transactions':'Dashboard and Atlas, together.'}</span></div><button type="button" class="presentation-toggle" data-action="presentation">${state.presentation?'Exit presentation':'Presentation mode'}</button></div>`;
+  return `${title}<section class="workspace-layout-v2 release16-layout">${left}${atlasChat(brief,tx)}</section><footer class="release-footer"><span>Atlas SmartLedger · Release 24.2</span><span>Evidence-Based Executive Intelligence</span></footer>`;
 }
 function imports(){return `${header('FINANCIAL IMPORT CENTER','Import financial transactions','Upload, map, validate, preview, and save a CSV statement in five guided steps.')}<div class="stepper">${['Upload','Map columns','Validate','Preview','Complete'].map((x,i)=>`<div class="step ${state.step===i+1?'active':''} ${state.step>i+1?'done':''}"><span>${state.step>i+1?'✓':i+1}</span><b>${x}</b></div>`).join('')}</div><article class="panel import-panel">${importStep()}</article>`}
 function importStep(){if(state.step===1)return `<div class="import-intro"><span class="upload-icon">⇧</span><h2>Upload a CSV statement</h2><p>Use a transaction export from your bank, credit card, or accounting system.</p><label class="drop-zone" id="dropZone"><input id="fileInput" type="file" accept=".csv,text/csv"><strong>Drop CSV file here</strong><span>or click to browse</span><small>Maximum recommended size: 10 MB</small></label><button class="demo-button sample-button" data-action="sample">Use included sample data</button></div>`;
