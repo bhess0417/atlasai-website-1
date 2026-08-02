@@ -43,7 +43,7 @@ app.innerHTML = `
       <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
       <div class="top-actions">
         <button class="outline" id="presentationBtn">Presentation mode</button>
-        <span class="release">ATLAS 24 · CONVERSATIONAL MEMORY</span>
+        <span class="release">ATLAS 24.1 · CONTEXT INTELLIGENCE</span>
         <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
     </header>
@@ -53,7 +53,7 @@ app.innerHTML = `
     <main class="page" id="mainPage">
       <section class="welcome-card">
         <div>
-          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · SPRINT 24</span>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · SPRINT 24.1</span>
           <h1 id="dynamicGreeting">Good afternoon, Brian.</h1>
           <p>Atlas completed your executive review and prepared the changes that need your attention.</p>
           <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="actionTrackerBtn">Open action tracker</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
@@ -100,7 +100,7 @@ app.innerHTML = `
 
         <aside class="atlas-panel" id="atlasPanel">
           <header><div class="atlas-title"><span class="atlas-logo">A</span><div><span>ATLAS · EXECUTIVE COPILOT</span><h2>Ask Atlas</h2><small>Proactive briefings, follow-ups, and remembered context.</small></div></div><div class="copilot-status"><span class="ready-pill green">● READY</span><span class="memory-pill">● MEMORY ON</span></div></header>
-          <div class="topic-row"><div><span>CURRENT TOPIC</span><strong id="topic">General business overview</strong><small id="memoryStatus">Conversation context ready</small></div><div class="topic-actions"><button id="historyBtn">History</button><button id="newChat">New chat</button></div></div>
+          <div class="topic-row"><div><span>CURRENT TOPIC</span><strong id="topic">General business overview</strong><small id="memoryStatus">Conversation context ready</small><div class="context-chips"><span id="contextEntity">Business overview</span><span id="contextGoal">Review priorities</span><span id="contextConfidence">Context ready</span></div></div><div class="topic-actions"><button id="historyBtn">History</button><button id="newChat">New chat</button></div></div>
           <div class="copilot-brief" id="copilotBrief"><span class="micro">SINCE YOUR LAST LOGIN</span><strong>4 executive changes detected</strong><small>Insurance renewal risk, new freight savings, stronger cash, and one invoice review.</small><button class="ghost" id="reviewChangesBtn">Review changes</button></div>
           <div class="chat" id="chat"></div>
           <div class="typing" id="typing"><span></span><span></span><span></span><em>Atlas is analyzing…</em></div>
@@ -166,29 +166,51 @@ const replies = {
   'What changed since yesterday?': 'Since yesterday, merchant processing fees increased 0.4%, cash on hand improved by $38,200, one new freight savings opportunity was identified, and no new liquidity risk was detected.'
 };
 
-const MEMORY_KEY='atlasNaturalConversation24';
-const conversationState={topic:'general',entity:'business overview',lastIntent:'overview',lastQuestion:'',lastAnswer:'',turnCount:0,recommendation:'Review the highest-impact savings opportunity first.'};
+const MEMORY_KEY='atlasNaturalConversation24_1';
+const conversationState={topic:'general',entity:'business overview',lastIntent:'overview',lastQuestion:'',lastAnswer:'',turnCount:0,recommendation:'Review the highest-impact savings opportunity first.',goal:'Review priorities',annualImpact:0,referents:[],confidence:0};
 
 function loadMemory(){
-  try{const saved=localStorage.getItem(MEMORY_KEY)||localStorage.getItem('atlasNaturalConversation21_2_1')||'{}';Object.assign(conversationState,JSON.parse(saved));}catch{}
+  try{const saved=localStorage.getItem(MEMORY_KEY)||localStorage.getItem('atlasNaturalConversation24')||localStorage.getItem('atlasNaturalConversation21_2_1')||'{}';Object.assign(conversationState,JSON.parse(saved));}catch{}
 }
 function saveMemory(){localStorage.setItem(MEMORY_KEY,JSON.stringify(conversationState));}
 function resetMemory(){
-  Object.assign(conversationState,{topic:'general',entity:'business overview',lastIntent:'overview',lastQuestion:'',lastAnswer:'',turnCount:0,recommendation:'Review the highest-impact savings opportunity first.'});
+  Object.assign(conversationState,{topic:'general',entity:'business overview',lastIntent:'overview',lastQuestion:'',lastAnswer:'',turnCount:0,recommendation:'Review the highest-impact savings opportunity first.',goal:'Review priorities',annualImpact:0,referents:[],confidence:0});
   localStorage.removeItem(MEMORY_KEY);
 }
-function setContext(topic,entity,intent,recommendation=''){
+function setContext(topic,entity,intent,recommendation='',details={}){
   conversationState.topic=topic;
   conversationState.entity=entity||topic;
   conversationState.lastIntent=intent;
   if(recommendation) conversationState.recommendation=recommendation;
+  conversationState.goal=details.goal||conversationState.goal||'Review priorities';
+  conversationState.annualImpact=Number(details.annualImpact??conversationState.annualImpact)||0;
+  conversationState.referents=Array.isArray(details.referents)?details.referents:conversationState.referents||[];
+  conversationState.confidence=Number(details.confidence??conversationState.confidence)||0;
   saveMemory();
 }
-function isFollowUp(q){return /^(why|how|tell me more|explain (it|that|this)|what next|what should i do next|what do you recommend|compare (it|them|those)|draft (an )?email|do that|which one|is that important|how much|what caused it)[?.!]*$/i.test(q.trim());}
+function isFollowUp(q){
+  const clean=String(q||'').trim();
+  return /^(why|how|tell me more|explain (it|that|this)|what next|what should i do next|what do you recommend|compare (it|them|those)|draft (an )?email|do that|which one|is that important|how much|what caused it)[?.!]*$/i.test(clean)
+    || /\b(it|this|that|these|those|them|they|one|ones|each)\b/i.test(clean);
+}
+function monthlyImpact(){return Math.round((Number(conversationState.annualImpact)||0)/12);}
+function contextualAmountReply(prompt){
+  const q=String(prompt||'').toLowerCase();
+  const monthly=/month|monthly|each month/.test(q);
+  const annual=Number(conversationState.annualImpact)||0;
+  const topic=conversationState.topic;
+  if(!annual) return `I’m following the ${conversationState.entity} discussion, but I do not have a modeled dollar amount attached to it yet.`;
+  const amount=monthly?money.format(monthlyImpact()):money.format(annual);
+  const period=monthly?'per month':'per year';
+  const descriptions={software:'the 27 inactive or overlapping software seats',insurance:'the commercial insurance opportunity',processing:'the merchant-processing opportunity',freight:'the freight opportunity'};
+  const subject=descriptions[topic]||conversationState.entity;
+  return `The modeled impact for ${subject} is approximately ${amount} ${period}${monthly?` (${money.format(annual)} annually ÷ 12)`:''}. For software, that is the potential cost tied to inactive or overlapping licenses—not the company’s entire software bill.`;
+}
 
 function detectIntent(prompt){
   const q=String(prompt||'').toLowerCase().trim();
   if(replies[prompt]) return {type:'exact',reply:replies[prompt]};
+  if(/(?:how much|what.*cost|cost.*how much|pay for).*(?:month|monthly|year|annual)|(?:month|monthly).*(?:cost|pay)/.test(q) && (isFollowUp(q)||conversationState.topic!=='general')) return {type:'contextAmount'};
   if(/draft.*email|write.*email/.test(q)) return {type:'draft'};
   if(/compare carriers|compare them|carrier quotes/.test(q)) return {type:'carriers'};
   if(/why|what caused|reason/.test(q) && isFollowUp(q)) return {type:'why'};
@@ -295,6 +317,7 @@ function buildReply(prompt){
     if(prompt==='What should I do first?') setContext('insurance','commercial insurance opportunity','next','Request three competitive quotes before renewal.');
     return intent.reply+'\n\nExecutive recommendation: '+conversationState.recommendation;
   }
+  if(intent.type==='contextAmount') return contextualAmountReply(prompt);
   if(['why','next','more','draft','carriers','followup','which'].includes(intent.type)){
     if(intent.type==='which') return 'Commercial insurance is the largest opportunity at $18,300 annually, followed by merchant processing at $14,800.';
     return contextualFollowUp(intent.type);
@@ -305,10 +328,10 @@ function buildReply(prompt){
     case 'changes': setContext('changes','changes since yesterday','changes','Review the new freight opportunity and flagged invoice.'); return replies['What changed since yesterday?']+'\n\nNothing requires an emergency response, but the vendor invoice should be reviewed before approval.';
     case 'insuranceEstimate': setContext('insurance','commercial insurance opportunity','insuranceEstimate','Request three competitive quotes before renewal.'); return 'The $18,300 estimate is based on current pricing being 18% above the peer benchmark, a 31-month gap since the last bid, and two potentially overlapping riders. Atlas uses a conservative achievable reduction rather than the full benchmark gap.';
     case 'invoiceReview': setContext('invoice','flagged vendor invoice','invoiceReview','Match it to the purchase order before approving payment.'); return 'One vendor invoice is 22% above that vendor’s six-month average. It also includes an unusual freight surcharge. Atlas recommends verifying the purchase order and requesting supporting detail before payment.';
-    case 'insurance': setContext('insurance','commercial insurance opportunity','insurance','Request three competitive quotes before renewal.'); return 'Commercial insurance is the largest current opportunity. Premiums are 18% above the peer benchmark, no competitive rebid has occurred in 31 months, and Atlas estimates $18,300 in annual savings.\n\nThe first thing I would do is gather the current policy and loss runs.';
-    case 'processing': setContext('processing','merchant processing opportunity','processing','Calculate the blended rate and request repricing.'); return 'Merchant processing is the second-largest opportunity. Effective fees increased 11% this quarter, creating an estimated $14,800 annual savings opportunity.\n\nI would calculate the blended rate before negotiating so you know exactly where the markup sits.';
-    case 'software': setContext('software','software subscription opportunity','software','Confirm ownership and cancel inactive seats before renewal.'); return 'Atlas found 27 paid software seats with no activity in the last 90 days. Consolidating inactive or overlapping licenses could save about $7,900 annually.\n\nI would confirm ownership before removing any license.';
-    case 'freight': setContext('freight','freight savings opportunity','freight','Compare the west location’s top five lanes.'); return 'Freight costs at the west location are 12% above the company average. Atlas estimates $5,100 in annual savings through carrier comparison, lane consolidation, and contract review.';
+    case 'insurance': setContext('insurance','commercial insurance opportunity','insurance','Request three competitive quotes before renewal.',{goal:'Lower renewal cost',annualImpact:18300,referents:['commercial insurance','renewal premium','policy riders'],confidence:96}); return 'Commercial insurance is the largest current opportunity. Premiums are 18% above the peer benchmark, no competitive rebid has occurred in 31 months, and Atlas estimates $18,300 in annual savings.\n\nThe first thing I would do is gather the current policy and loss runs.';
+    case 'processing': setContext('processing','merchant processing opportunity','processing','Calculate the blended rate and request repricing.',{goal:'Lower processing fees',annualImpact:14800,referents:['merchant processing fees','blended rate','processor markup'],confidence:95}); return 'Merchant processing is the second-largest opportunity. Effective fees increased 11% this quarter, creating an estimated $14,800 annual savings opportunity.\n\nI would calculate the blended rate before negotiating so you know exactly where the markup sits.';
+    case 'software': setContext('software','inactive software seats','software','Confirm ownership and cancel inactive seats before renewal.',{goal:'Reduce recurring software spend',annualImpact:7900,referents:['27 paid software seats','inactive licenses','overlapping software'],confidence:97}); return 'Atlas found 27 paid software seats with no activity in the last 90 days. Consolidating inactive or overlapping licenses could save about $7,900 annually, or approximately $658 per month.\n\nI would confirm ownership before removing any license.';
+    case 'freight': setContext('freight','freight savings opportunity','freight','Compare the west location’s top five lanes.',{goal:'Reduce west-location freight cost',annualImpact:5100,referents:['west-location freight','shipping lanes','carrier costs'],confidence:91}); return 'Freight costs at the west location are 12% above the company average. Atlas estimates $5,100 in annual savings through carrier comparison, lane consolidation, and contract review.';
     case 'cash': setContext('cash','cash-flow position','cash','Continue monitoring; no intervention is needed today.'); return 'Cash on hand is $2.84 million. Atlas rates 90-day liquidity risk as low, and cash improved by $38,200 since yesterday.\n\nNo immediate cash-flow intervention is recommended.';
     case 'vendor': setContext('vendor','vendor portfolio','vendor','Review the flagged invoice and highest-cost contracts.'); return 'Atlas reviewed 412 active vendors across three locations. The strongest vendor-related opportunities are insurance, merchant processing, software licensing, and freight. No concentration risk currently exceeds the demo alert threshold.';
     case 'transaction': setContext('transaction','selected transaction','transaction','Open the transaction details and verify supporting documentation.'); return `I would evaluate that transaction against the vendor’s history, category pattern, duplicate risk, and benchmark variance. Open the transaction row for the specific evidence behind the flag.`;
@@ -420,11 +443,14 @@ function updateMemoryIndicator(){
   if(topic) topic.textContent=conversationState.entity==='business overview'?'General business overview':conversationState.entity.replace(/^./,c=>c.toUpperCase());
   const status=document.querySelector('#memoryStatus');
   if(status) status.textContent=conversationState.turnCount?`${conversationState.turnCount} remembered ${conversationState.turnCount===1?'exchange':'exchanges'}`:'Conversation context ready';
+  const entity=document.querySelector('#contextEntity'); if(entity) entity.textContent=conversationState.entity==='business overview'?'Business overview':conversationState.entity.replace(/^./,c=>c.toUpperCase());
+  const goal=document.querySelector('#contextGoal'); if(goal) goal.textContent=conversationState.goal||'Review priorities';
+  const confidence=document.querySelector('#contextConfidence'); if(confidence) confidence.textContent=conversationState.confidence?`${conversationState.confidence}% context confidence`:'Context ready';
 }
 function openConversationHistory(){
   const messages=loadConversation();
   const body=messages.map((m,index)=>`<article class="history-message ${m.who}"><span>${m.who==='atlas'?'ATLAS':'YOU'} · ${String(index+1).padStart(2,'0')}</span><p>${escapeMessage(m.text).replace(/\n/g,'<br>')}</p></article>`).join('');
-  openModal('Conversation History',body||'<p>No conversation history yet.</p>','SPRINT 24 · ASK ATLAS MEMORY');
+  openModal('Conversation History',body||'<p>No conversation history yet.</p>','SPRINT 24.1 · CONTEXT INTELLIGENCE');
 }
 function answer(prompt){
   loadMemory();
@@ -568,7 +594,7 @@ function bindFunctionalPage(name){
 
 function signOut(){
   sessionStorage.removeItem('atlasSession');
-  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Sprint 24 · Secure session cleared</small></section></div>`;
+  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Sprint 24.1 · Secure session cleared</small></section></div>`;
   document.querySelector('#demoEntry').addEventListener('click',()=>location.reload());
   document.querySelector('#accountEntry').addEventListener('click',()=>{document.querySelector('.signin-card').innerHTML=`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>Sign in</h1><label class="signin-label">Email<input type="email" placeholder="you@company.com"></label><label class="signin-label">Password<input type="password" placeholder="••••••••"></label><button class="gold" id="signinSubmit">Sign in</button><button class="outline" id="backChoice">Back</button>`;document.querySelector('#signinSubmit').addEventListener('click',()=>toast('Account authentication will connect during production setup'));document.querySelector('#backChoice').addEventListener('click',()=>location.reload())});
 }
