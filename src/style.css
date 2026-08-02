@@ -11,3 +11,24 @@
 .copilot-brief{margin:14px 14px 0;padding:14px;border:1px solid #476144;background:linear-gradient(135deg,rgba(202,168,74,.14),rgba(16,48,53,.78));border-radius:15px;display:grid;gap:6px}.copilot-brief strong{color:#f4df96;font-size:14px}.copilot-brief small{color:#9db2c7;line-height:1.45}.copilot-brief button{justify-self:start;min-height:34px;padding:0 11px;margin-top:3px}.atlas-panel .chat{height:286px}
 
 .copilot-status{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.memory-pill{font-size:10px;font-weight:800;letter-spacing:.08em;color:#7ee2b8;background:rgba(41,173,116,.12);border:1px solid rgba(66,211,145,.25);border-radius:999px;padding:7px 9px}.chat .message p{line-height:1.55;white-space:normal}
+
+/* Sprint 23: Executive Action System */
+.action-tracker-summary{padding:20px;border-color:rgba(229,196,93,.35)}
+.action-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.action-summary-grid article{padding:16px;border:1px solid #29445c;border-radius:14px;background:#0b1d2e}
+.action-summary-grid span,.action-summary-grid strong,.action-summary-grid small{display:block}
+.action-summary-grid span{font-size:9px;letter-spacing:.12em;color:#7f99b6;font-weight:900}
+.action-summary-grid strong{font-family:Georgia,serif;font-size:25px;margin:8px 0 3px;color:#e8c65e}
+.action-summary-grid small{color:#76a4a0;font-size:10px}
+.tracker-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.tracker-toolbar p{margin:0}.tracker-list{display:grid;gap:10px;margin-top:18px}
+.tracker-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px;border:1px solid #2b465e;border-radius:15px;background:#0a1c2d}
+.tracker-item h3{margin:7px 0 5px}.tracker-item small{color:#8fa4bb}
+.tracker-status{display:inline-block;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.08em}
+.tracker-status.identified{background:#27374a;color:#9fb2c8}.tracker-status.in-progress{background:#4b3d19;color:#f0ca61}.tracker-status.completed{background:#123d32;color:#68dfb7}
+.tracker-controls{display:grid;grid-template-columns:130px 145px 70px;gap:8px}
+.tracker-controls select,.tracker-controls input{min-height:40px;border:1px solid #35516a;background:#091a2b;color:#f8f3e8;border-radius:10px;padding:0 10px}
+.tracker-total{margin-top:16px;padding:16px;border-radius:14px;background:#123429;border:1px solid #2b6a55;display:flex;justify-content:space-between;align-items:center}
+.tracker-total span{color:#91b8aa}.tracker-total strong{font-size:25px;color:#69dfb6}.modal-button-row{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:900px){.action-summary-grid{grid-template-columns:repeat(2,1fr)}.tracker-item{grid-template-columns:1fr}.tracker-controls{grid-template-columns:1fr}}
+@media(max-width:560px){.action-summary-grid{grid-template-columns:1fr}}
