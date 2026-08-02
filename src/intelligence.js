@@ -1,61 +1,108 @@
-export const demoProfile = {
-  company: 'Atlas Manufacturing Group',
-  industry: 'Precision manufacturing',
-  employees: 187,
-  locations: 3,
-  vendors: 412,
-  annualTransactions: 9842,
-  revenue: 28400000,
-  cash: 2840000,
-  margin: 21.4,
-  completedAt: '4:17 AM',
-  confidence: 97,
-  sources: ['Banking','Credit Cards','Accounts Payable','Accounts Receivable','Payroll','Vendor Activity']
-};
+const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-export const demoBrief = {
-  generatedAt: new Date().toISOString(),
-  transactionCount: 9842,
-  confidence: 97,
-  healthScore: 92,
-  annualSavings: 46100,
-  cashStatus: 'Healthy',
-  summary: 'Atlas completed the overnight review. Financial health is strong, with four issues worth executive attention this morning.',
-  priorities: [
-    {id:'insurance',title:'Review commercial insurance',impact:18300,confidence:96,decisionScore:96,ease:'High',timeToValue:'30–60 days',evidenceCount:14,timeline:[['4:08 AM','14 policy and payment records synchronized'],['4:12 AM','18% premium increase detected'],['4:15 AM','Payroll and claims context compared'],['4:18 AM','Peer-cost variance modeled'],['4:22 AM','Recommendation ranked #1']],why:'Premiums increased 18% while coverage and claims activity remained stable. A competitive quote review is likely to produce meaningful savings with limited operational disruption.',nextStep:'Request three competitive quotes before the next renewal review.',evidence:['14 insurance payments reviewed','Premium increased 18% over 18 months','Payroll increased only 4%','Claims activity remained stable'],supporting:[{date:'2026-06-01',vendor:'Travelers Insurance',amount:-18650,description:'Commercial package premium'},{date:'2026-05-01',vendor:'Travelers Insurance',amount:-18650,description:'Commercial package premium'},{date:'2026-04-01',vendor:'Travelers Insurance',amount:-18650,description:'Commercial package premium'}]},
-    {id:'processing',title:'Renegotiate merchant processing',impact:14800,confidence:94,decisionScore:92,ease:'Medium',timeToValue:'45–90 days',evidenceCount:12,timeline:[['4:09 AM','12 merchant statements synchronized'],['4:13 AM','Blended fee rate calculated'],['4:17 AM','Volume pricing opportunity detected'],['4:21 AM','Annual savings estimate modeled'],['4:24 AM','Recommendation ranked #2']],why:'Effective processing fees are above the modeled peer range for the company’s transaction mix. Contract review and volume-based pricing could lower annual fees.',nextStep:'Request an interchange-plus proposal and compare the blended effective rate.',evidence:['12 monthly statements reviewed','Effective fee rate is above modeled peer range','Transaction volume supports tiered pricing'],supporting:[{date:'2026-06-02',vendor:'Merchant Services',amount:-8420,description:'Monthly processing fees'},{date:'2026-05-02',vendor:'Merchant Services',amount:-8175,description:'Monthly processing fees'}]},
-    {id:'energy',title:'Optimize plant energy use',impact:8100,confidence:91,decisionScore:84,ease:'Medium',timeToValue:'60–120 days',evidenceCount:18,timeline:[['4:10 AM','18 utility statements synchronized'],['4:14 AM','Facility usage normalized by output'],['4:18 AM','Ohio plant variance detected'],['4:22 AM','Peak-demand impact calculated'],['4:25 AM','Recommendation ranked #3']],why:'Electricity costs at the Ohio plant are 12% above the company’s other facilities after adjusting for production volume.',nextStep:'Schedule a facility-level demand and peak-usage review.',evidence:['18 utility statements reviewed','Ohio plant cost per unit is 12% higher','Peak demand charges increased for three months'],supporting:[{date:'2026-06-10',vendor:'Ohio Energy Cooperative',amount:-22980,description:'Plant electricity'},{date:'2026-05-10',vendor:'Ohio Energy Cooperative',amount:-22060,description:'Plant electricity'}]},
-    {id:'subscriptions',title:'Remove inactive software licenses',impact:4900,confidence:98,decisionScore:81,ease:'High',timeToValue:'7–14 days',evidenceCount:9,timeline:[['4:11 AM','Recurring software charges synchronized'],['4:14 AM','Seat utilization compared'],['4:17 AM','Four inactive licenses detected'],['4:20 AM','Renewal timing verified'],['4:23 AM','Recommendation ranked #4']],why:'Four recurring software licenses have continued billing without corresponding active-user patterns in the demo operating profile.',nextStep:'Confirm ownership, then remove four inactive seats before renewal.',evidence:['9 recurring charges reviewed','Four seats show no modeled activity','Next renewal is within 30 days'],supporting:[{date:'2026-06-12',vendor:'Microsoft',amount:-769,description:'Enterprise software seats'},{date:'2026-06-14',vendor:'Adobe',amount:-685,description:'Creative licenses'}]}
-  ]
-};
-demoBrief.nextAction = demoBrief.priorities[0];
+const subscriptionTerms = ['adobe','microsoft','google workspace','dropbox','slack','zoom','quickbooks','canva','notion','asana','monday','hubspot'];
+const fuelTerms = ['shell','bp','exxon','marathon','speedway','chevron','fuel'];
 
-export const demoIndustryNews = [
-  {level:'HIGH',title:'Specialty steel prices moved higher',impact:'Potential margin pressure on Q4 production',why:'Steel represents 31% of modeled direct-material spending.',action:'Review supplier commitments and consider locking pricing for critical grades.'},
-  {level:'HIGH',title:'Proposed freight rule may raise regional carrier costs',impact:'Inbound logistics costs could increase 3–5%',why:'Two primary suppliers rely on affected regional routes.',action:'Request updated freight schedules and compare alternate carriers before renewals.'}
-];
+function includesAny(value, terms) {
+  const haystack = String(value || '').toLowerCase();
+  return terms.some((term) => haystack.includes(term));
+}
 
-const vendors = [
-  ['Midwest Steel Supply','Raw Materials'],['Great Lakes Alloy','Raw Materials'],['Grainger','Maintenance'],['Fastenal','Maintenance'],
-  ['Ohio Energy Cooperative','Utilities'],['FedEx Freight','Freight'],['UPS Supply Chain','Freight'],['Microsoft','Software'],
-  ['Adobe','Software'],['Travelers Insurance','Insurance'],['Gusto Payroll','Payroll'],['Shell Fleet','Fuel']
-];
+function absAmount(tx) {
+  const value = Number(tx?.amount || 0);
+  return value < 0 ? Math.abs(value) : 0;
+}
 
-export function createDemoTransactions(count=9842){
-  const rows=[];
-  const start=new Date('2026-01-01T12:00:00');
-  for(let i=0;i<count;i++){
-    const [vendor,category]=vendors[i%vendors.length];
-    const d=new Date(start);d.setDate(d.getDate()+Math.floor(i/3));
-    let amount=-(220+(i%17)*83.45);
-    if(category==='Raw Materials') amount=-(12400+(i%9)*1180);
-    if(category==='Payroll') amount=-(128000+(i%4)*4500);
-    if(category==='Insurance') amount=-18650;
-    if(category==='Utilities') amount=-(18400+(i%6)*920);
-    if(category==='Software') amount=-(349+(i%5)*84);
-    rows.push({id:`demo-${i}`,date:d.toISOString().slice(0,10),vendor,description:`${category} operating expense`,amount:Number(amount.toFixed(2)),category,valid:true,duplicate:false});
+function displayVendor(tx) {
+  return tx?.vendor || tx?.description || 'Unknown vendor';
+}
+
+export function buildExecutiveBrief(transactions = [], imports = []) {
+  const expenses = transactions.filter((tx) => Number(tx.amount) < 0);
+  const totalSpend = expenses.reduce((sum, tx) => sum + absAmount(tx), 0);
+  const subscriptionSpend = expenses.filter((tx) => includesAny(`${displayVendor(tx)} ${tx.description}`, subscriptionTerms));
+  const fuelSpend = expenses.filter((tx) => includesAny(`${displayVendor(tx)} ${tx.description}`, fuelTerms));
+
+  const duplicateGroups = new Map();
+  expenses.forEach((tx) => {
+    const key = `${tx.date || tx.dateRaw || ''}|${displayVendor(tx).toLowerCase()}|${absAmount(tx).toFixed(2)}`;
+    duplicateGroups.set(key, [...(duplicateGroups.get(key) || []), tx]);
+  });
+  const possibleDuplicates = [...duplicateGroups.values()].filter((group) => group.length > 1);
+  const duplicateValue = possibleDuplicates.reduce((sum, group) => sum + absAmount(group[0]) * (group.length - 1), 0);
+
+  const subscriptionsMonthly = subscriptionSpend.reduce((sum, tx) => sum + absAmount(tx), 0);
+  const subscriptionOpportunity = Math.round(subscriptionsMonthly * 0.2 * 12);
+  const processingOpportunity = expenses.length ? 1846 : 0;
+  const duplicateOpportunity = Math.round(duplicateValue);
+  const annualSavings = Math.max(0, subscriptionOpportunity + processingOpportunity + duplicateOpportunity);
+
+  const priorities = [];
+  if (possibleDuplicates.length) {
+    priorities.push({
+      id: 'duplicates',
+      title: `Review ${possibleDuplicates.length} possible duplicate payment${possibleDuplicates.length === 1 ? '' : 's'}`,
+      impact: duplicateOpportunity,
+      confidence: 98,
+      why: `SmartLedger found matching combinations of date, vendor, and amount. The possible duplicate value is ${currency.format(duplicateOpportunity)}.`,
+    });
   }
-  rows.push({id:'demo-dup-1',date:'2026-06-18',vendor:'Adobe',description:'Enterprise license renewal',amount:-1249,category:'Software',valid:true,duplicate:true});
-  rows.push({id:'demo-dup-2',date:'2026-06-18',vendor:'Adobe',description:'Enterprise license renewal',amount:-1249,category:'Software',valid:true,duplicate:true});
-  return rows;
+  if (subscriptionSpend.length) {
+    priorities.push({
+      id: 'subscriptions',
+      title: 'Consolidate overlapping software subscriptions',
+      impact: subscriptionOpportunity,
+      confidence: 91,
+      why: `${subscriptionSpend.length} software-related transactions total ${currency.format(subscriptionsMonthly)} in the imported period. The estimate assumes 20% can be eliminated or renegotiated.`,
+    });
+  }
+  priorities.push({
+    id: 'processing',
+    title: 'Review payment processing rates',
+    impact: processingOpportunity,
+    confidence: expenses.length ? 82 : 64,
+    why: expenses.length
+      ? 'The imported activity is sufficient for an initial fee-review recommendation. A connected merchant statement will make this estimate more precise.'
+      : 'This is a starter recommendation. Import a merchant statement to calculate your exact blended processing rate.',
+  });
+  if (fuelSpend.length) {
+    const fuelTotal = fuelSpend.reduce((sum, tx) => sum + absAmount(tx), 0);
+    priorities.push({
+      id: 'fuel',
+      title: 'Check fleet and fuel purchasing patterns',
+      impact: Math.round(fuelTotal * 0.06 * 12),
+      confidence: 76,
+      why: `${fuelSpend.length} fuel-related transactions total ${currency.format(fuelTotal)} in the imported period. Atlas is using a conservative 6% optimization estimate.`,
+    });
+  }
+
+  priorities.forEach((item) => {
+    const impactScore = Math.min(40, Math.round(item.impact / 500));
+    const confidenceScore = Math.round(item.confidence * 0.35);
+    item.decisionScore = Math.min(99, impactScore + confidenceScore + 20);
+    item.ease = item.id === 'duplicates' || item.id === 'subscriptions' ? 'High' : 'Medium';
+    item.timeToValue = item.id === 'duplicates' ? '1–7 days' : item.id === 'subscriptions' ? '7–14 days' : '30–90 days';
+    item.evidenceCount = item.id === 'duplicates' ? possibleDuplicates.length : item.id === 'subscriptions' ? subscriptionSpend.length : expenses.length;
+    item.nextStep = item.id === 'duplicates' ? 'Confirm the duplicate charges and request a credit.' : item.id === 'subscriptions' ? 'Confirm ownership and remove inactive licenses before renewal.' : 'Collect the latest contract and request a competitive review.';
+    item.evidence = [item.why, `${item.evidenceCount} supporting record${item.evidenceCount === 1 ? '' : 's'} reviewed`, `Estimated annual impact: ${currency.format(item.impact)}`];
+  });
+  priorities.sort((a, b) => (b.decisionScore || 0) - (a.decisionScore || 0));
+  const topPriorities = priorities.slice(0, 3);
+  const healthScore = Math.max(68, Math.min(94, 86 - possibleDuplicates.length * 2 + Math.min(imports.length, 4)));
+
+  return {
+    generatedAt: new Date().toISOString(),
+    transactionCount: transactions.length,
+    importCount: imports.length,
+    totalSpend,
+    annualSavings,
+    healthScore,
+    cashStatus: transactions.length ? 'Healthy' : 'Awaiting data',
+    confidence: transactions.length ? 88 : 67,
+    priorities: topPriorities,
+    nextAction: topPriorities[0] || null,
+    summary: transactions.length
+      ? `Atlas reviewed ${transactions.length.toLocaleString('en-US')} transactions and identified ${currency.format(annualSavings)} in potential annual savings.`
+      : 'Import a recent bank or card statement so Atlas can replace demo assumptions with company-specific intelligence.',
+  };
 }
