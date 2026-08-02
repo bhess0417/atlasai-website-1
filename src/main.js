@@ -43,7 +43,7 @@ app.innerHTML = `
       <div><span class="micro">CURRENT WORKSPACE</span><button class="workspace-name">Atlas AI Demo Company⌄</button></div>
       <div class="top-actions">
         <button class="outline" id="presentationBtn">Presentation mode</button>
-        <span class="release">ATLAS 23 · EXECUTIVE ACTION SYSTEM</span>
+        <span class="release">ATLAS 24 · CONVERSATIONAL MEMORY</span>
         <div class="profile"><span>BH</span><div><strong>Brian Hess</strong><small>Owner</small></div></div>
       </div>
     </header>
@@ -53,7 +53,7 @@ app.innerHTML = `
     <main class="page" id="mainPage">
       <section class="welcome-card">
         <div>
-          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · SPRINT 23</span>
+          <span class="micro">ATLAS EXECUTIVE COMMAND CENTER · SPRINT 24</span>
           <h1 id="dynamicGreeting">Good afternoon, Brian.</h1>
           <p>Atlas completed your executive review and prepared the changes that need your attention.</p>
           <div class="welcome-actions"><button class="gold" id="briefBtn">View executive brief</button><button class="ghost" id="actionTrackerBtn">Open action tracker</button><button class="ghost" id="askBtn">Ask Atlas</button></div>
@@ -100,7 +100,7 @@ app.innerHTML = `
 
         <aside class="atlas-panel" id="atlasPanel">
           <header><div class="atlas-title"><span class="atlas-logo">A</span><div><span>ATLAS · EXECUTIVE COPILOT</span><h2>Ask Atlas</h2><small>Proactive briefings, follow-ups, and remembered context.</small></div></div><div class="copilot-status"><span class="ready-pill green">● READY</span><span class="memory-pill">● MEMORY ON</span></div></header>
-          <div class="topic-row"><div><span>CURRENTLY DISCUSSING</span><strong id="topic">General business overview</strong></div><button id="newChat">New conversation</button></div>
+          <div class="topic-row"><div><span>CURRENT TOPIC</span><strong id="topic">General business overview</strong><small id="memoryStatus">Conversation context ready</small></div><div class="topic-actions"><button id="historyBtn">History</button><button id="newChat">New chat</button></div></div>
           <div class="copilot-brief" id="copilotBrief"><span class="micro">SINCE YOUR LAST LOGIN</span><strong>4 executive changes detected</strong><small>Insurance renewal risk, new freight savings, stronger cash, and one invoice review.</small><button class="ghost" id="reviewChangesBtn">Review changes</button></div>
           <div class="chat" id="chat"></div>
           <div class="typing" id="typing"><span></span><span></span><span></span><em>Atlas is analyzing…</em></div>
@@ -166,15 +166,15 @@ const replies = {
   'What changed since yesterday?': 'Since yesterday, merchant processing fees increased 0.4%, cash on hand improved by $38,200, one new freight savings opportunity was identified, and no new liquidity risk was detected.'
 };
 
-const MEMORY_KEY='atlasNaturalConversation21_2_1';
-const conversationState={topic:'general',entity:'business overview',lastIntent:'overview',lastAnswer:'',recommendation:'Review the highest-impact savings opportunity first.'};
+const MEMORY_KEY='atlasNaturalConversation24';
+const conversationState={topic:'general',entity:'business overview',lastIntent:'overview',lastQuestion:'',lastAnswer:'',turnCount:0,recommendation:'Review the highest-impact savings opportunity first.'};
 
 function loadMemory(){
-  try{Object.assign(conversationState,JSON.parse(localStorage.getItem(MEMORY_KEY)||'{}'));}catch{}
+  try{const saved=localStorage.getItem(MEMORY_KEY)||localStorage.getItem('atlasNaturalConversation21_2_1')||'{}';Object.assign(conversationState,JSON.parse(saved));}catch{}
 }
 function saveMemory(){localStorage.setItem(MEMORY_KEY,JSON.stringify(conversationState));}
 function resetMemory(){
-  Object.assign(conversationState,{topic:'general',entity:'business overview',lastIntent:'overview',lastAnswer:'',recommendation:'Review the highest-impact savings opportunity first.'});
+  Object.assign(conversationState,{topic:'general',entity:'business overview',lastIntent:'overview',lastQuestion:'',lastAnswer:'',turnCount:0,recommendation:'Review the highest-impact savings opportunity first.'});
   localStorage.removeItem(MEMORY_KEY);
 }
 function setContext(topic,entity,intent,recommendation=''){
@@ -387,12 +387,12 @@ function renderFollowUps(prompt){
   row.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
 }
 
-const COPILOT_STORAGE_KEY='atlasCopilotConversation21_2_1';
+const COPILOT_STORAGE_KEY='atlasCopilotConversation24';
 const defaultCopilotMessage='I completed your executive review. Since your last login, I found four changes: insurance remains the largest savings opportunity, a new $5,100 freight opportunity appeared, cash improved by $38,200, and one vendor invoice needs review. Which should we examine first?';
 
 function escapeMessage(text){return String(text).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function loadConversation(){
-  try{const saved=JSON.parse(localStorage.getItem(COPILOT_STORAGE_KEY)||'[]');return Array.isArray(saved)&&saved.length?saved:[{who:'atlas',text:defaultCopilotMessage}]}catch{return [{who:'atlas',text:defaultCopilotMessage}]}
+  try{const raw=localStorage.getItem(COPILOT_STORAGE_KEY)||localStorage.getItem('atlasCopilotConversation21_2_1')||'[]';const saved=JSON.parse(raw);return Array.isArray(saved)&&saved.length?saved:[{who:'atlas',text:defaultCopilotMessage}]}catch{return [{who:'atlas',text:defaultCopilotMessage}]}
 }
 function saveConversation(){
   const items=[...document.querySelectorAll('#chat .message')].map(el=>({who:el.classList.contains('user')?'user':'atlas',text:el.querySelector('p')?.textContent||''}));
@@ -414,18 +414,33 @@ function addMessage(text, who='atlas', persist=true){
   chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
   if(persist) saveConversation();
 }
+function updateMemoryIndicator(){
+  loadMemory();
+  const topic=document.querySelector('#topic');
+  if(topic) topic.textContent=conversationState.entity==='business overview'?'General business overview':conversationState.entity.replace(/^./,c=>c.toUpperCase());
+  const status=document.querySelector('#memoryStatus');
+  if(status) status.textContent=conversationState.turnCount?`${conversationState.turnCount} remembered ${conversationState.turnCount===1?'exchange':'exchanges'}`:'Conversation context ready';
+}
+function openConversationHistory(){
+  const messages=loadConversation();
+  const body=messages.map((m,index)=>`<article class="history-message ${m.who}"><span>${m.who==='atlas'?'ATLAS':'YOU'} · ${String(index+1).padStart(2,'0')}</span><p>${escapeMessage(m.text).replace(/\n/g,'<br>')}</p></article>`).join('');
+  openModal('Conversation History',body||'<p>No conversation history yet.</p>','SPRINT 24 · ASK ATLAS MEMORY');
+}
 function answer(prompt){
   loadMemory();
   addMessage(prompt,'user');
-  const topic=document.querySelector('#topic'); if(topic) topic.textContent=prompt;
   const typing=document.querySelector('#typing'); typing?.classList.add('show');
   setTimeout(()=>{
     typing?.classList.remove('show');
     const response=buildReply(prompt);
-    conversationState.lastAnswer=response; saveMemory();
+    conversationState.lastQuestion=prompt;
+    conversationState.lastAnswer=response;
+    conversationState.turnCount=(Number(conversationState.turnCount)||0)+1;
+    saveMemory();
     addMessage(response,'atlas');
+    updateMemoryIndicator();
     renderFollowUps(prompt);
-  },650);
+  },450);
 }
 function openModal(title, body, eyebrow='EXECUTIVE BRIEF'){document.querySelector('#modalEyebrow').textContent=eyebrow;document.querySelector('#modalTitle').textContent=title;document.querySelector('#modalBody').innerHTML=body;document.querySelector('#modal').classList.add('open')}
 function statusLabel(status){return status==='in-progress'?'In progress':status==='completed'?'Completed':'Identified'}
@@ -439,9 +454,11 @@ function bindDashboard(){
   animateCounts();
   setGreeting();
   restoreConversation();
+  updateMemoryIndicator();
   document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.prompt)));
   document.querySelector('#chatForm')?.addEventListener('submit',e=>{e.preventDefault();const i=document.querySelector('#chatInput');const v=i.value.trim();if(v){answer(v);i.value=''}});
-  document.querySelector('#newChat')?.addEventListener('click',()=>{localStorage.removeItem(COPILOT_STORAGE_KEY);resetMemory();document.querySelector('#chat').innerHTML='';addMessage('New conversation started. I still have the current executive data available. What would you like to review?','atlas');document.querySelector('#topic').textContent='New conversation'});
+  document.querySelector('#historyBtn')?.addEventListener('click',openConversationHistory);
+  document.querySelector('#newChat')?.addEventListener('click',()=>{localStorage.removeItem(COPILOT_STORAGE_KEY);resetMemory();document.querySelector('#chat').innerHTML='';addMessage('New conversation started. I still have the current executive data available. What would you like to review?','atlas');updateMemoryIndicator();renderFollowUps('')});
   document.querySelector('#reviewChangesBtn')?.addEventListener('click',()=>answer('What changed since yesterday?'));
   document.querySelector('#askBtn')?.addEventListener('click',()=>{document.querySelector('#atlasPanel').scrollIntoView({behavior:'smooth',block:'start'});document.querySelector('#chatInput').focus()});
   document.querySelector('#briefBtn')?.addEventListener('click',()=>openModal('Tonight’s Executive Brief',`<div class="brief-grid"><article><span>Financial health</span><strong>92</strong><small>Healthy</small></article><article><span>Annual savings</span><strong>$46,100</strong><small>4 opportunities</small></article><article><span>Top priority</span><strong>Insurance review</strong><small>$18,300 potential</small></article></div><p>Atlas recommends beginning the commercial insurance review first, followed by merchant processing. Cash flow remains healthy and no immediate liquidity risk was detected.</p>`));
@@ -551,7 +568,7 @@ function bindFunctionalPage(name){
 
 function signOut(){
   sessionStorage.removeItem('atlasSession');
-  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Sprint 23 · Secure session cleared</small></section></div>`;
+  app.innerHTML=`<div class="signed-out"><section class="signin-card"><span class="brand-mark large">A</span><span class="micro">ATLAS AI · SMARTLEDGER</span><h1>You are signed out.</h1><p>Choose how you would like to enter Atlas AI. Demo mode will never open automatically.</p><button class="gold" id="demoEntry">Enter demo workspace</button><button class="outline" id="accountEntry">Sign in to an account</button><small>Sprint 24 · Secure session cleared</small></section></div>`;
   document.querySelector('#demoEntry').addEventListener('click',()=>location.reload());
   document.querySelector('#accountEntry').addEventListener('click',()=>{document.querySelector('.signin-card').innerHTML=`<span class="brand-mark large">A</span><span class="micro">SECURE ACCOUNT ACCESS</span><h1>Sign in</h1><label class="signin-label">Email<input type="email" placeholder="you@company.com"></label><label class="signin-label">Password<input type="password" placeholder="••••••••"></label><button class="gold" id="signinSubmit">Sign in</button><button class="outline" id="backChoice">Back</button>`;document.querySelector('#signinSubmit').addEventListener('click',()=>toast('Account authentication will connect during production setup'));document.querySelector('#backChoice').addEventListener('click',()=>location.reload())});
 }
