@@ -121,6 +121,44 @@ app.innerHTML = `
 <div class="toast" id="toast"></div>
 `;
 
+// Sprint 23.0.1 navigation recovery
+// Preserve the live dashboard before page switching and restore the page templates
+// that were omitted from the Sprint 23 package.
+const dashboardHTML = document.querySelector('#mainPage').innerHTML;
+
+const pageTemplates = {
+  'Financial Imports': `
+    <section class="page-heading"><div><span class="micro">FINANCIAL DATA HUB</span><h1>Financial Imports</h1><p>Bring bank, credit-card, and accounting activity into SmartLedger.</p></div><button class="outline ask-page" data-page="Financial Imports">Ask Atlas about imports</button></section>
+    <section class="page-grid two-up">
+      <article class="panel functional-card"><span class="micro">BANK & CREDIT CARD</span><h2>Import a CSV statement</h2><p>Upload exported transactions from your financial institution. Files remain in your browser during this demonstration.</p><button class="gold" data-import="CSV statement">Choose CSV file</button></article>
+      <article class="panel functional-card"><span class="micro">ACCOUNTING PLATFORM</span><h2>Connect accounting data</h2><p>Preview the guided QuickBooks and ledger connection workflow.</p><button class="outline" data-import="accounting data">Start guided connection</button></article>
+    </section>
+    <section class="panel page-table-panel"><div class="section-head"><div><span class="micro">RECENT ACTIVITY</span><h2>Latest imports</h2></div><span class="ready-pill">ALL SYSTEMS READY</span></div><div class="simple-list"><div><strong>Operating Account</strong><span>4,281 records · July 30, 2026</span><b>Completed</b></div><div><strong>Corporate Visa</strong><span>3,204 records · July 29, 2026</span><b>Completed</b></div><div><strong>Payroll Clearing</strong><span>2,357 records · July 28, 2026</span><b>Completed</b></div></div></section>`,
+
+  'Transactions': `
+    <section class="page-heading"><div><span class="micro">FINANCIAL ACTIVITY</span><h1>Transactions</h1><p>Search recent activity and inspect items identified by Atlas.</p></div><button class="outline ask-page" data-page="Transactions">Ask Atlas about transactions</button></section>
+    <section class="panel page-table-panel"><div class="table-tools"><input id="transactionSearch" placeholder="Search vendor, date, or amount"><select id="transactionFilter"><option>All categories</option><option>Insurance</option><option>Processing</option><option>Software</option><option>Freight</option></select><button class="outline" id="exportTransactions">Export CSV</button></div><div class="responsive-table"><table id="transactionsTable"><thead><tr><th>Vendor</th><th>Date</th><th>Category</th><th>Amount</th><th>Atlas status</th></tr></thead><tbody>
+      <tr class="transaction-row"><td>Harbor Commercial Insurance</td><td>Jul 30, 2026</td><td>Insurance</td><td>$24,880</td><td><span class="table-status opportunity">Opportunity</span></td></tr>
+      <tr class="transaction-row"><td>Northstar Merchant Services</td><td>Jul 29, 2026</td><td>Processing</td><td>$18,420</td><td><span class="table-status opportunity">Opportunity</span></td></tr>
+      <tr class="transaction-row"><td>CloudStack Software</td><td>Jul 28, 2026</td><td>Software</td><td>$6,980</td><td><span class="table-status review">Review</span></td></tr>
+      <tr class="transaction-row"><td>Western Freight Group</td><td>Jul 28, 2026</td><td>Freight</td><td>$12,740</td><td><span class="table-status normal">Normal</span></td></tr>
+      <tr class="transaction-row"><td>Midwest Steel Supply</td><td>Jul 27, 2026</td><td>Materials</td><td>$84,260</td><td><span class="table-status review">Review</span></td></tr>
+    </tbody></table></div></section>`,
+
+  'Import History': `
+    <section class="page-heading"><div><span class="micro">DATA AUDIT TRAIL</span><h1>Import History</h1><p>Review every completed financial-data import.</p></div><button class="outline ask-page" data-page="Import History">Ask Atlas about history</button></section>
+    <section class="panel page-table-panel"><div class="section-head"><div><span class="micro">12 SUCCESSFUL IMPORTS</span><h2>Workspace import log</h2></div><span class="ready-pill green">NO ERRORS</span></div><div class="simple-list history-list"><div><strong>Operating Account</strong><span>Jul 30, 2026 · 4,281 records · CSV</span><b>Completed</b></div><div><strong>Corporate Visa</strong><span>Jul 29, 2026 · 3,204 records · CSV</span><b>Completed</b></div><div><strong>Payroll Clearing</strong><span>Jul 28, 2026 · 2,357 records · CSV</span><b>Completed</b></div><div><strong>Operating Account</strong><span>Jun 30, 2026 · 4,112 records · CSV</span><b>Completed</b></div></div></section>`,
+
+  'Payments & Billing': `
+    <section class="page-heading"><div><span class="micro">SUBSCRIPTION MANAGEMENT</span><h1>Payments & Billing</h1><p>Manage your SmartLedger plan, payment method, and invoices.</p></div><button class="outline ask-page" data-page="Payments & Billing">Ask Atlas about billing</button></section>
+    <section class="page-grid billing-cards"><article class="panel functional-card"><span class="micro">CURRENT PLAN</span><h2>Professional</h2><strong class="billing-price">$299<span>/month</span></strong><p>3 companies · 10 users · Executive AI intelligence</p><button class="gold billing-action" data-billing="Upgrade plan">Manage plan</button></article><article class="panel functional-card"><span class="micro">PAYMENT METHOD</span><h2>Visa ending 4321</h2><p>Expires 04/29 · Next charge August 29, 2026</p><button class="outline billing-action" data-billing="Update payment method">Update payment method</button></article></section>
+    <section class="panel page-table-panel"><div class="section-head"><div><span class="micro">INVOICES</span><h2>Billing history</h2></div><button class="outline billing-action" data-billing="Download next invoice">Download next invoice</button></div><div class="simple-list"><div><strong>INV-2026-007</strong><span>July 29, 2026 · $299.00</span><button class="text-link billing-action" data-billing="Download INV-2026-007">Download</button></div><div><strong>INV-2026-006</strong><span>June 29, 2026 · $299.00</span><button class="text-link billing-action" data-billing="Download INV-2026-006">Download</button></div><div><strong>INV-2026-005</strong><span>May 29, 2026 · $299.00</span><button class="text-link billing-action" data-billing="Download INV-2026-005">Download</button></div></div></section>`,
+
+  'Settings': `
+    <section class="page-heading"><div><span class="micro">WORKSPACE CONTROLS</span><h1>Settings</h1><p>Configure executive briefings, security, and Atlas memory.</p></div><button class="outline ask-page" data-page="Settings">Ask Atlas about settings</button></section>
+    <section class="panel settings-panel"><div class="setting-row"><div><strong>Daily CEO briefing</strong><span>Prepare an executive summary each morning.</span></div><label class="switch"><input type="checkbox" checked><span></span></label></div><div class="setting-row"><div><strong>Atlas conversation memory</strong><span>Keep context for natural follow-up questions.</span></div><label class="switch"><input type="checkbox" checked><span></span></label></div><div class="setting-row"><div><strong>Executive notifications</strong><span>Alert the owner when a high-impact item changes.</span></div><label class="switch"><input type="checkbox" checked><span></span></label></div><div class="setting-row"><div><strong>Two-factor authentication</strong><span>Active for the owner account.</span></div><button class="outline settings-action">Manage security</button></div><button class="gold" id="saveSettings">Save settings</button></section>`
+};
+
 const replies = {
   'Explain the top priority': 'Commercial insurance is ranked first because premiums are 18% above comparable manufacturers, no competitive rebid has occurred in 31 months, and two policy riders appear to overlap. Estimated annual savings: $18,300.',
   'Show all savings': 'Atlas identified four savings opportunities totaling $46,100 annually: commercial insurance ($18,300), merchant processing ($14,800), software consolidation ($7,900), and freight optimization ($5,100).',
@@ -411,12 +449,19 @@ function bindDashboard(){
 }
 
 function showPage(name){
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.nav===name));
   const main=document.querySelector('#mainPage');
-  if(name==='Dashboard'){main.innerHTML=dashboardHTML;bindDashboard();return}
-  main.innerHTML=pageTemplates[name]||pageTemplates.Settings;
+  if(!main) return;
+  const target=name==='Dashboard'?'Dashboard':(pageTemplates[name]?name:'Settings');
+  document.querySelectorAll('.sidebar-nav [data-nav]').forEach(x=>x.classList.toggle('active',x.dataset.nav===target));
+  if(target==='Dashboard'){
+    main.innerHTML=dashboardHTML;
+    bindDashboard();
+  }else{
+    main.innerHTML=pageTemplates[target];
+    bindFunctionalPage(target);
+  }
+  document.querySelector('.sidebar')?.classList.remove('open');
   window.scrollTo({top:0,behavior:'smooth'});
-  bindFunctionalPage(name);
 }
 
 function downloadFile(filename, content, type='text/plain;charset=utf-8'){
@@ -512,8 +557,14 @@ function signOut(){
 }
 
 bindDashboard();
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.nav)));
-document.querySelector('.signout').addEventListener('click',signOut);
+// Scope navigation to the sidebar and delegate clicks so it remains reliable
+// after dashboard content is replaced and restored.
+document.querySelector('.sidebar-nav')?.addEventListener('click',event=>{
+  const button=event.target.closest('[data-nav]');
+  if(!button) return;
+  showPage(button.dataset.nav);
+});
+document.querySelector('.signout')?.addEventListener('click',signOut);
 document.querySelector('#reloadBtn').addEventListener('click',()=>{if(document.querySelector('.count'))animateCounts();toast('Demo data reloaded')});
 document.querySelector('#presentationBtn').addEventListener('click',()=>{document.body.classList.toggle('presentation');toast(document.body.classList.contains('presentation')?'Presentation mode on':'Presentation mode off')});
 document.querySelector('#modalClose').addEventListener('click',()=>document.querySelector('#modal').classList.remove('open'));
